@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Il Mio Orto V8.0 — Grafica moderna</title>
+<style>
+:root{--bg:#f4f7f1;--card:#fff;--text:#203020;--muted:#667366;--accent:#3f7d32;--accent2:#e7f1e2;--danger:#b64235}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--accent);color:white;padding:22px 5%;display:flex;justify-content:space-between;align-items:center;gap:15px}
+h1,h2,h3{margin:0 0 10px}.wrap{max-width:1200px;margin:auto;padding:22px 5%}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}button{border:0;border-radius:10px;padding:11px 15px;font-weight:650;cursor:pointer;background:var(--accent);color:white}button.secondary{background:var(--accent2);color:var(--text)}button.danger{background:#f8e2df;color:var(--danger)}
+nav{display:block}.main-nav,.sub-nav{display:flex;flex-wrap:wrap;gap:8px}.main-nav{margin-bottom:10px}.sub-nav{padding:12px;border-radius:12px;background:#eaf1e6}.main-nav button.active{background:#234f23;outline:2px solid #b9d3b1}.sub-nav button.selected{background:#fff;box-shadow:inset 0 0 0 2px #3f7d32}.main-nav button,.sub-nav button{min-height:44px}@media(max-width:600px){.main-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.main-nav button:first-child{grid-column:1/-1}.sub-nav button{flex:1 1 42%}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 2px 12px #20302012}
+.stat{font-size:30px;font-weight:750}.muted{color:var(--muted);font-size:14px}
+table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden}th,td{text-align:left;padding:12px;border-bottom:1px solid #e5eae3}th{background:#eef4eb}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:15px 0}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd6c8;border-radius:9px;background:white}textarea{min-height:80px}
+.hidden{display:none}.tag{display:inline-block;padding:5px 9px;border-radius:99px;background:var(--accent2);font-size:13px}
+@media(max-width:600px){header{align-items:flex-start;flex-direction:column}table{font-size:14px}}
+.rowbuttons{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.day{border:1px solid #e3e9e0;border-radius:7px;min-height:85px;padding:6px;overflow-wrap:anywhere}.day.head{min-height:0;text-align:center;background:#e7f1e2;font-weight:bold}.day.blank{background:#f4f7f1}.event{font-size:11px;background:#e7f1e2;border-radius:5px;padding:3px;margin-top:4px}.bar{height:12px;background:#e7f1e2;border-radius:8px;overflow:hidden}.bar span{display:block;height:100%;background:#3f7d32}@media(max-width:600px){.day{min-height:65px;padding:3px}.event{font-size:9px}}
+ .notice{border-left:4px solid #d68a25;padding:12px;background:#fff8e8;border-radius:8px;margin:12px 0}.scroll{overflow-x:auto}.pill{padding:4px 8px;background:#e7f1e2;border-radius:9px;display:inline-block}.search{max-width:400px}.due{border-left:4px solid #bf7832;padding-left:9px} button:focus-visible,input:focus-visible{outline:3px solid #e6b34c}
+.print-heading{display:none}.print-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.print-tools select{max-width:340px}
+@media print{
+ @page{size:A4;margin:13mm}
+ body{background:white!important;color:#111!important;font:10pt Arial,sans-serif!important}
+ header,nav,.no-print,button,input,select,textarea,.print-tools,.form{display:none!important}
+ .wrap{max-width:none!important;padding:0!important;margin:0!important}
+ .print-heading{display:block!important;border-bottom:2px solid #555;margin-bottom:15px;padding-bottom:8px}
+ .print-heading h2{font-size:18pt;margin:0}.print-heading p{font-size:9pt;margin:4px 0}
+ .card{box-shadow:none!important;border:1px solid #bbb!important;border-radius:4px!important;margin:8px 0!important;break-inside:avoid}
+ .scroll{overflow:visible!important}
+ table{font-size:8pt!important;width:100%!important;table-layout:auto!important}th,td{padding:4px!important;overflow-wrap:anywhere}tr{break-inside:avoid}thead{display:table-header-group}
+ .grid{display:block!important}.grid>.card{margin:6px 0!important}
+ #ortoMap{width:100%!important;min-height:0!important;max-height:none!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .map-object{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .bar,.bar span{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ img{max-width:100%!important}
+}
+
+/* Restyling grafico V8.0: solo CSS, nessuna modifica alla gestione dei dati */
+:root{--bg:#f4f7f4;--card:#ffffff;--text:#20362c;--muted:#64766b;--accent:#276b48;--accent2:#e4f2e9;--danger:#b54141;--line:#dde8e0;--shadow:0 5px 22px rgba(30,65,45,.07)}
+body{background:linear-gradient(180deg,#e8f3ea 0,#f4f7f4 300px);line-height:1.55;-webkit-font-smoothing:antialiased}
+header{background:linear-gradient(115deg,#154c36,#287a50 75%,#399460);padding:25px max(5%,calc((100vw - 1280px)/2));box-shadow:0 5px 20px #164c3624}
+header h1{font-size:clamp(25px,3vw,35px);letter-spacing:-.8px;margin-bottom:2px}
+header>div>div{color:#d9f0e1;font-size:14px;letter-spacing:.25px}
+.wrap{max-width:1320px;padding:25px 4% 70px}
+.main-nav{gap:9px;margin-bottom:12px}
+.main-nav button{background:#fff;color:#3a5a47;border:1px solid #dce9df;box-shadow:0 2px 6px #234b3010}
+.main-nav button:hover{background:#eef7f0;transform:translateY(-1px)}
+.main-nav button.active{background:#246b47;color:white;outline:none;border-color:#246b47;box-shadow:0 4px 12px #276b4830}
+.sub-nav{background:#fff;border:1px solid #e1eae3;box-shadow:var(--shadow);border-radius:16px;padding:12px;gap:8px;margin-bottom:22px}
+.sub-nav button{border-radius:9px}
+button{transition:background .15s ease,transform .15s ease,box-shadow .15s ease;border-radius:10px}
+button:hover{filter:brightness(.96)}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #83bc98;outline-offset:2px}
+button.secondary{background:#e8f3ec;color:#255f41}
+button.danger{background:#b54141;color:#fff}
+.card{border:1px solid #e4ece6;box-shadow:var(--shadow);border-radius:18px;padding:22px}
+.card:hover{box-shadow:0 8px 26px rgba(30,65,45,.09)}
+.grid{gap:16px}
+h2{font-size:clamp(23px,2.6vw,30px);letter-spacing:-.5px;margin-bottom:18px;color:#1b5038}
+h3{color:#27533b;font-size:18px;letter-spacing:-.2px}
+.stat{font-size:clamp(26px,3vw,36px);font-weight:800;letter-spacing:-1px;color:#1f6846}
+.muted{color:var(--muted)}
+input,select,textarea{border:1px solid #cfddd2;background:#fcfefc;border-radius:10px;min-height:43px;color:var(--text);font:inherit}
+input:focus,select:focus,textarea:focus{border-color:#4b9b6c;background:#fff}
+label{color:#3b5a47;font-weight:600;font-size:14px}
+table{border:1px solid #e0eae3;box-shadow:0 2px 9px #1e412d0b}
+th{background:#eaf3ed;color:#24573c;font-size:13px;text-transform:uppercase;letter-spacing:.35px}
+td{border-color:#edf1ed}
+tr:nth-child(even) td{background:#fbfdfb}
+tr:hover td{background:#f2f8f3}
+.tag,.pill{background:#e4f2e9;color:#286544;font-weight:650}
+.notice{border-left-color:#d59b42;background:#fff9eb}
+.scroll{border-radius:12px}
+@media(max-width:700px){header{padding:20px 5%}.wrap{padding:18px 4% 55px}.card{padding:16px;border-radius:14px}.main-nav,.sub-nav{gap:6px}.main-nav button,.sub-nav button{padding:9px 11px;font-size:13px}th,td{padding:9px 8px}}
+@media print{body{background:white!important}header{display:none!important}.card{box-shadow:none!important}th{background:#eee!important;color:#111!important}}
+
+/* Interfaccia moderna: menu laterale e superfici leggere */
+:root{--bg:#f5f7f8;--card:#fff;--text:#192e24;--muted:#667d71;--accent:#167449;--accent2:#e7f4eb;--shadow:0 5px 22px #164a3010}
+body{background:#f5f7f8;color:var(--text);font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#fff;color:#1b4a34;padding:18px 32px 18px 290px;min-height:85px;box-shadow:0 1px 0 #e3eae5}
+header h1{font-size:25px;color:#1b5138;margin:0}header>div>div{color:#7b9484}
+header button.secondary{background:#e6f2ea;color:#246c45}
+.wrap{max-width:none;padding:27px 32px 70px 290px}
+#nav{position:fixed;top:0;bottom:0;left:0;width:260px;z-index:10;overflow-y:auto;background:#123d2e;padding:25px 13px;box-shadow:7px 0 24px #123d2e10;display:block;margin:0}
+.side-brand{color:#fff;font-size:20px;padding:7px 12px 22px;border-bottom:1px solid #ffffff2b;margin-bottom:16px}
+.side-brand small{display:block;color:#a9c7b6;font-size:10px;letter-spacing:1.4px;margin:6px 0 0 35px}
+.side-group{margin-bottom:15px}.side-label{color:#9fbeae;font-size:11px;letter-spacing:.65px;text-transform:uppercase;font-weight:750;padding:8px 12px}
+.side-link{display:block;width:100%;min-height:39px;margin:2px 0;text-align:left;background:transparent;color:#d7e9de;font-size:13px;font-weight:550;border-radius:10px;padding:9px 12px;box-shadow:none}
+.side-link:hover{background:#ffffff20;filter:none;transform:none}
+.side-link.selected{background:#d8f0e2;color:#145637;font-weight:800;box-shadow:0 2px 9px #00000018}
+#app{max-width:1450px;margin:auto}
+.card{background:#fff;border:1px solid #e8eeea;border-radius:18px;box-shadow:var(--shadow);padding:23px}
+.card:hover{box-shadow:var(--shadow)}
+h2{color:#184b34;font-size:clamp(24px,2.5vw,31px);margin-bottom:20px}
+h3{color:#28513c}.stat{color:#17794e;font-size:clamp(28px,3vw,38px)}
+.grid{gap:18px}button{border-radius:10px}button.secondary{background:#e9f3ed;color:#1d6742}
+input,select,textarea{background:#fcfefc}th{background:#eef5f0}
+@media(max-width:1020px){header{padding-left:240px}.wrap{padding-left:240px}#nav{width:215px}.side-link{font-size:12px;padding:9px}}
+@media(max-width:760px){header{padding:16px;min-height:0;flex-direction:row;align-items:center}header h1{font-size:21px}.wrap{padding:14px 12px 55px}#nav{position:relative;width:auto;max-height:255px;overflow-y:auto;border-radius:15px;margin-bottom:18px;padding:12px}.side-brand{font-size:16px;padding:3px 8px 10px;margin-bottom:7px}.side-brand small{display:none}.side-group{display:inline-block;vertical-align:top;width:48%;margin-bottom:7px}.side-label{font-size:10px;padding:7px}.side-link{font-size:12px;padding:8px;min-height:37px}.card{padding:16px}.grid{gap:12px}}
+@media(max-width:440px){.side-group{width:100%}}
+@media print{header,#nav{display:none!important}.wrap{padding:0!important}}
+
+/* Correzione navigazione: i titoli dei gruppi sono veri pulsanti */
+button.side-group-button{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;color:#b4d1be;border:0;box-shadow:none;text-align:left;cursor:pointer;border-radius:9px;min-height:36px;font-size:11px;letter-spacing:.5px;font-weight:800;padding:8px 12px}
+button.side-group-button:hover,button.side-group-button:focus-visible{background:#ffffff22;color:white;filter:none;transform:none}
+button.side-group-button span{font-size:19px;font-weight:500}
+
+/* Menu sezioni: click sul titolo espande o comprime le opzioni */
+.side-group.menu-collapsed .side-link{display:none!important}
+.side-group-button{position:relative;z-index:1;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.side-group-button .group-arrow{font-size:18px;color:#e4f6e9}
+.side-group-button:active{background:#ffffff30!important}
+</style>
+</head>
+<body>
+<header><div><h1>🌱 Il Mio Orto</h1><div>V8.0 · Grafica moderna</div></div><button class="secondary" onclick="backup()">💾 Backup</button></header>
+<div class="wrap">
+<nav id="nav"></nav>
+<div id="printHeading" class="print-heading"><h2>Il Mio Orto — Report</h2><p id="printMeta"></p></div>
+<section id="app"></section>
+</div>
+<script>
+const KEY="ortoGestionale_v1";
+let db=JSON.parse(localStorage.getItem(KEY)||'{"colture":[],"attivita":[],"raccolti":[],"trattamenti":[]}');
+db.trattamenti=db.trattamenti||[];db.trattamenti ||= []; db.mappa ||= []; db.irrigazioni ||= []; db.concimazioni ||= []; db.foto ||= []; db.alberi ||= []; db.prodotti ||= []; db.movimentiMagazzino ||= []; db.fotoSchede ||= []; db.pianiIrrigazione ||= []; db.semine ||= []; db.rotazioni ||= []; db.spese ||= []; db.prezziRaccolti ||= []; db.eventiFrutteto ||= []; db.lavoriAnnuali ||= []; db.trappole ||= []; db.controlliTrappole ||= []; db.sementi ||= []; db.movimentiSementi ||= []; db.impostazioniMeteo ||= {localita:'Forlì',lat:44.2226,lon:12.0408,gelata:2,caldo:32,pioggia:10}; let page="dashboard"; window.ripetizione=null;
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function save(){localStorage.setItem(KEY,JSON.stringify(db));cloudChanged();render()}
+const GROUPS=[
+ {id:"dashboard",label:"🏠 Dashboard",items:[["dashboard","Panoramica"]]},
+ {id:"piante",label:"🌱 Piante",items:[["colture","🌿 Colture"],["alberi","🌳 Alberi da frutto"],["frutteto","🍎 Diario del frutteto"],["schede","📷 Schede e foto"],["dettaglio","📒 Scheda pianta"],["mappa","🗺️ Mappa orto"]]},
+ {id:"interventi",label:"🧴 Interventi",items:[["irrigazioni","💧 Irrigazioni"],["concimazioni","🌾 Concimazioni"],["trattamenti","🧴 Trattamenti"],["trappole","🪤 Trappole insetti"],["prodotti","📦 Prodotti e magazzino"],["attivita","📋 Attività"]]},
+ {id:"pianificazione",label:"📅 Pianificazione",items:[["semine","🌱 Semine e trapianti"],["sementi","🌰 Magazzino sementi"],["rotazioni","🔄 Rotazioni"],["calendario","🗓️ Calendario"],["annuale","📆 Piano annuale"],["promemoria","🔔 Scadenze"]]},
+ {id:"cloud",label:"☁️ Sincronizzazione",items:[["cloud","☁️ Mac e Linux"]]},
+  {id:"strumenti",label:"📊 Strumenti",items:[["raccolti","🍅 Raccolti"],["economia","💶 Costi e produttività"],["statistiche","📊 Statistiche"],["bilancio","📑 Bilancio annuale"],["confronto","📈 Confronti raccolti"],["meteo","🌦️ Meteo"],["ricerca","🔎 Ricerca"],["controllo","🛡️ Controllo dati"],["stampa","🖨️ Stampa"],["dati","💾 Backup"]]}
+];
+function goGroup(id){let g=GROUPS.find(x=>x.id===id);if(g){page=g.items[0][0];render()}}
+function toggleMenuGroup(id){
+ const group=document.getElementById('menu-group-'+id);
+ if(!group)return;
+ const closed=group.classList.toggle('menu-collapsed');
+ const btn=group.querySelector('.side-group-button');
+ if(btn){btn.setAttribute('aria-expanded',String(!closed));const arrow=btn.querySelector('.group-arrow');if(arrow)arrow.textContent=closed?'▸':'▾'}
+}
+
+function nav(){
+ let active=GROUPS.find(g=>g.items.some(item=>item[0]===page))||GROUPS[0];
+ document.getElementById("nav").innerHTML=`<div class="side-brand">🌿 <strong>Il Mio Orto</strong><small>GESTIONALE V8.0</small></div>${GROUPS.map(g=>`<div class="side-group" id="menu-group-${g.id}"><button type="button" class="side-label side-group-button" onclick="toggleMenuGroup('${g.id}')" aria-expanded="true" title="Mostra o nascondi le opzioni di ${g.label}">${g.label} <span class="group-arrow" aria-hidden="true">▾</span></button>${g.items.map(item=>`<button type="button" class="side-link ${page===item[0]?'selected':''}" aria-current="${page===item[0]?'page':'false'}" onclick="page='${item[0]}';render()">${item[1]}</button>`).join('')}</div>`).join('')}`;
+}
+function render(){if(page==="cloud"){nav();cloudPage(document.getElementById("app"));return}if(window.ripetizione && page!==window.ripetizione.tipo)window.ripetizione=null;nav();let a=document.getElementById("app"); if(page=="dashboard")dash(a); if(page=="colture")colture(a); if(page=="attivita")attivita(a); if(page=="raccolti")raccolti(a); if(page=="trattamenti")trattamenti(a);if(page=="trappole")trappole(a); if(page=="mappa")mappa(a); if(page=="dati")dati(a); if(page=="irrigazioni")irrigazioni(a);if(page=="concimazioni")concimazioni(a);if(page=="schede")schede(a);if(page=="dettaglio")dettaglioPianta(a);if(page=="calendario")calendario(a);if(page=="semine")semine(a);if(page=="sementi")sementi(a);if(page=="rotazioni")rotazioni(a);if(page=="statistiche")statistiche(a);if(page=="annuale")pianoAnnuale(a);if(page=="bilancio")bilancioAnnuale(a);if(page=="economia")economia(a);if(page=="confronto")confronto(a);if(page=="alberi")alberi(a);if(page=="frutteto")frutteto(a);if(page=="meteo")meteo(a);if(page=="ricerca")ricerca(a);if(page=="controllo")controlloDati(a);if(page=="promemoria")promemoria(a);if(page=="prodotti")prodotti(a);if(page=="stampa")stampa(a);aggiornaIntestazioneStampa();aggiungiPulsanteStampa()}
+
+const PRINT_SECTIONS=[['annuale','Piano annuale'],['bilancio','Bilancio annuale'],['controllo','Controllo dati'],['frutteto','Diario del frutteto'],['semine','Semine e trapianti'],['rotazioni','Rotazioni colturali'],['economia','Costi e produttività'],['mappa','Mappa orto'],['schede','Schede e foto'],['colture','Colture'],['alberi','Alberi da frutto'],['irrigazioni','Irrigazioni'],['concimazioni','Concimazioni'],['trattamenti','Trattamenti'],['trappole','Trappole insetti'],['raccolti','Raccolti'],['attivita','Attività'],['prodotti','Prodotti e magazzino'],['statistiche','Statistiche'],['confronto','Confronti raccolti'],['calendario','Calendario'],['promemoria','Scadenze']];
+function aggiornaIntestazioneStampa(){
+ let label=PRINT_SECTIONS.find(x=>x[0]===page)?.[1]||'Report';
+ const title=document.querySelector('#printHeading h2'),meta=document.getElementById('printMeta');
+ if(title)title.textContent='Il Mio Orto — '+label;
+ if(meta)meta.textContent='Stampato il '+new Date().toLocaleDateString('it-IT')+' · Gestionale V8.0';
+}
+function stampaPagina(){
+ if(page==='stampa')return alert('Seleziona prima una sezione da stampare.');
+ aggiornaIntestazioneStampa();window.print();
+}
+function stampa(a){
+ a.innerHTML=`<h2>🖨️ Stampa e report</h2><div class="card"><h3>Stampa una sezione</h3><p>Seleziona cosa vuoi stampare. Si aprirà la sezione scelta; in alto troverai il pulsante «Stampa questa pagina».</p>
+ <div class="form"><label>Sezione da stampare<select id="printSection">${PRINT_SECTIONS.map(([id,label])=>`<option value="${id}">${esc(label)}</option>`).join('')}</select></label></div>
+ <button onclick="apriSezioneStampa()">Apri anteprima</button></div>
+ <div class="card" style="margin-top:15px"><h3>Stampa e PDF</h3><p>Usa «Stampa questa pagina» per aprire la finestra di stampa del browser. Puoi scegliere la stampante oppure «Salva come PDF».</p><p class="muted">Per stampare la mappa con i colori, abilita «Stampa sfondi» nelle opzioni del browser. I pulsanti e i campi di inserimento non saranno stampati.</p></div>`;
+}
+function apriSezioneStampa(){const id=document.getElementById('printSection').value;if(!PRINT_SECTIONS.some(x=>x[0]===id))return;page=id;render();window.scrollTo(0,0)}
+function aggiungiPulsanteStampa(){
+ let a=document.getElementById('app');if(!a||page==='stampa'||page==='dati'||page==='meteo'||page==='ricerca')return;
+ const toolbar=document.createElement('div');toolbar.className='print-tools no-print';
+ const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='🖨️ Stampa questa pagina / Salva PDF';btn.onclick=stampaPagina;
+ toolbar.appendChild(btn);a.prepend(toolbar);
+}
+function dash(a){
+ const oggi=localDay(new Date()),fine=addDays(oggi,7),sc=scadenze(),vicine=sc.filter(x=>x.data<=fine),ritardo=vicine.filter(x=>x.data<oggi),avvisi=avvisiMagazzino(),anomalie=controlliArchivio();
+ const piantine=db.colture.length+db.alberi.length;
+ const raccolto=db.raccolti.reduce((n,x)=>n+(Number(x.q)||0),0);
+ const prossimi=vicine.slice(0,8);
+ a.innerHTML=`<h2>🏠 Centro di controllo dell'orto</h2><div class="grid">
+ <div class="card"><div class="muted">Piante registrate</div><div class="stat">${piantine}</div><button class="secondary" onclick="page='schede';render()">Apri schede</button></div>
+ <div class="card"><div class="muted">Scadenze entro 7 giorni</div><div class="stat">${vicine.length}</div><p class="muted">${ritardo.length} in ritardo</p><button class="secondary" onclick="page='promemoria';render()">Vedi scadenze</button></div>
+ <div class="card"><div class="muted">Avvisi magazzino</div><div class="stat">${avvisi.length}</div><button class="secondary" onclick="page='prodotti';render()">Apri magazzino</button></div>
+ <div class="card"><div class="muted">Controlli dati</div><div class="stat">${anomalie.length}</div><button class="secondary" onclick="page='controllo';render()">Controlla archivio</button></div>
+ <div class="card"><div class="muted">Raccolti registrati</div><div class="stat">${db.raccolti.length}</div><p>${raccolto.toFixed(2)} kg totali</p></div>
+ <div class="card"><div class="muted">Alberi nel frutteto</div><div class="stat">${db.alberi.length}</div><button class="secondary" onclick="page='frutteto';render()">Diario frutteto</button></div>
+ </div>
+ <div class="card" style="margin-top:15px"><h3>🔔 Da fare e da controllare</h3>${prossimi.map(x=>`<p><span class="tag">${x.data<oggi?'In ritardo':x.data===oggi?'Oggi':'In arrivo'}</span> <b>${esc(x.data)}</b> · ${esc(x.tipo)} · ${esc(x.coltura)} ${esc(x.note)}</p>`).join('')||'<p class="muted">Nessuna scadenza nei prossimi sette giorni.</p>'}</div>
+ <div class="card" style="margin-top:15px"><h3>📦 Magazzino</h3>${avvisi.slice(0,6).map(x=>`<p>⚠️ <b>${esc(x.nome)}</b> — ${esc(x.motivo)}</p>`).join('')||'<p class="muted">Nessun avviso di magazzino.</p>'}</div>
+ <div class="card" style="margin-top:15px"><h3>🛡️ Qualità dei dati</h3>${anomalie.slice(0,5).map(x=>`<p>• ${esc(x.messaggio)}</p>`).join('')||'<p class="muted">Nessuna anomalia rilevata dai controlli disponibili.</p>'}<p><button class="secondary" onclick="page='controllo';render()">Apri tutti i controlli</button> <button class="secondary" onclick="page='ricerca';render()">🔎 Ricerca generale</button></p></div>`;
+}
+function colture(a){a.innerHTML=`<h2>Colture</h2><div class="card"><h3>Nuova coltura</h3><div class="form"><input id="c1" placeholder="Coltura (es. pomodoro)"><input id="c2" placeholder="Varietà"><input id="c3" type="date" title="Data semina/trapianto"><input id="c4" placeholder="Posizione"><button onclick="addColtura()">Aggiungi</button></div></div>
+<div class="card" style="margin-top:15px"><table><tr><th>Coltura</th><th>Varietà</th><th>Data</th><th>Posizione</th><th></th></tr>${db.colture.map((x,i)=>`<tr><td><b>${esc(x.nome)}</b></td><td>${esc(x.var)}</td><td>${esc(x.data)}</td><td>${esc(x.pos)}</td><td><button class="danger" onclick="del('colture',${i})">Elimina</button></td></tr>`).join("")}</table></div>`}
+function addColtura(){let nome=c1.value.trim();if(!nome)return alert("Inserisci la coltura");db.colture.push({pid:uidPianta(),nome,var:c2.value,data:c3.value,pos:c4.value});save()}
+function attivita(a){a.innerHTML=`<h2>Attività</h2><div class="card"><h3>Programma attività</h3><div class="form"><select id="t1"><option>Irrigazione</option><option>Concimazione</option><option>Trattamento</option><option>Semina</option><option>Trapianto</option><option>Potatura</option><option>Altro</option></select><input id="t2" placeholder="Coltura"><input id="t3" type="date"><input id="t4" placeholder="Note"><button onclick="addAtt()">Aggiungi</button></div></div>
+<div class="card" style="margin-top:15px"><table><tr><th>Data</th><th>Tipo</th><th>Coltura</th><th>Note</th><th></th></tr>${db.attivita.sort((x,y)=>x.data.localeCompare(y.data)).map((x,i)=>`<tr><td>${esc(x.data)}</td><td>${esc(x.tipo)}</td><td>${esc(x.coltura)}</td><td>${esc(x.note)}</td><td><button class="danger" onclick="del('attivita',${i})">Elimina</button></td></tr>`).join("")}</table></div>`}
+function addAtt(){if(!t3.value)return alert("Inserisci la data");db.attivita.push({tipo:t1.value,coltura:t2.value,data:t3.value,note:t4.value});save()}
+let annoRaccolti=new Date().getFullYear();
+function anniDisponibili(){return [...new Set([2024,2025,2026,new Date().getFullYear(),...db.raccolti.map(x=>Number((x.data||'').slice(0,4))).filter(y=>y>=1900&&y<=2200)])].sort((a,b)=>a-b)}
+function raccolti(a){
+ let dati=db.raccolti.map((x,i)=>({...x,indice:i})).filter(x=>Number((x.data||'').slice(0,4))===annoRaccolti).sort((x,y)=>y.data.localeCompare(x.data));
+ let tot=dati.reduce((s,x)=>s+(Number(x.q)||0),0);
+ a.innerHTML=`<h2>🍅 Raccolti giornalieri</h2><div class="card"><h3>Registra una pesata</h3><p class="muted">Puoi inserire anche raccolti degli anni passati: l'annata viene ricavata automaticamente dalla data.</p><div class="form"><input id="r1" list="nomiColture" placeholder="Ortaggio (es. pomodoro)"><datalist id="nomiColture">${db.colture.map(x=>`<option value="${esc(x.nome)}">`).join('')}</datalist><input id="r2" type="number" min="0.001" step="0.001" placeholder="Peso (kg)"><input id="r3" type="date" value="${localDay(new Date())}"><input id="r4" placeholder="Note facoltative"><button onclick="addR()">Registra pesata</button></div></div>
+ <div class="card" style="margin-top:15px"><div class="rowbuttons"><h3>Pesate per annata</h3><select id="annoR" onchange="annoRaccolti=Number(this.value);render()">${anniDisponibili().map(y=>`<option value="${y}" ${y===annoRaccolti?'selected':''}>${y}</option>`).join('')}</select><button class="secondary" onclick="page='confronto';render()">📈 Confronta annate</button></div><p><b>${dati.length}</b> pesate · <b>${tot.toFixed(3)} kg</b> raccolti nel ${annoRaccolti}</p><div style="overflow-x:auto"><table><tr><th>Data</th><th>Ortaggio</th><th>Peso kg</th><th>Note</th><th></th></tr>${dati.map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.coltura)}</td><td>${Number(x.q).toFixed(3)}</td><td>${esc(x.note)}</td><td><button class="danger" onclick="del('raccolti',${x.indice})">Elimina</button></td></tr>`).join('')||'<tr><td colspan="5">Nessuna pesata per questa annata.</td></tr>'}</table></div></div>`;
+}
+function addR(){let kg=Number(r2.value);if(!r1.value.trim()||!r3.value||!Number.isFinite(kg)||kg<=0)return alert('Inserisci ortaggio, data e peso valido');db.raccolti.push({coltura:r1.value.trim(),q:kg,data:r3.value,note:r4.value});annoRaccolti=Number(r3.value.slice(0,4));save()}
+const coloriGrafico=['#227a41','#cf6a21','#2459b5','#a43e92','#8a7121','#12838d','#9b423b','#5a50a2'];
+function graficoMensileSVG(anni,records){
+ const left=58,right=890,top=28,bottom=293,w=right-left,h=bottom-top;
+ const valid=anni.filter(y=>records.some(r=>Number(r.data.slice(0,4))===y));
+ const values=y=>Array.from({length:12},(_,i)=>records.filter(r=>Number(r.data.slice(0,4))===y&&Number(r.data.slice(5,7))===i+1).reduce((s,r)=>s+Number(r.q),0));
+ const max=Math.max(1,...valid.flatMap(y=>values(y)));
+ const ceiling=Math.ceil(max/5)*5||5;
+ const x=i=>left+(w*i/11),yy=v=>bottom-h*v/ceiling;
+ let out='';
+ for(let i=0;i<=5;i++){let v=ceiling*i/5,y=yy(v);out+=`<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#e0e8df"/><text x="${left-8}" y="${y+4}" text-anchor="end" font-size="12" fill="#526452">${v.toFixed(v%1?1:0)}</text>`}
+ ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'].forEach((m,i)=>out+=`<text x="${x(i)}" y="${bottom+24}" text-anchor="middle" font-size="12" fill="#526452">${m}</text>`);
+ out+=`<text x="12" y="18" font-size="12" fill="#526452">kg</text>`;
+ valid.forEach(y=>{let vs=values(y),color=coloriGrafico[anni.indexOf(y)%coloriGrafico.length];out+=`<polyline points="${vs.map((v,i)=>`${x(i)},${yy(v)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`;vs.forEach((v,i)=>{out+=`<circle cx="${x(i)}" cy="${yy(v)}" r="4" fill="${color}"><title>${y} - ${i+1}: ${v.toFixed(3)} kg</title></circle>`})});
+ return out;
+}
+let confrontoTipo='mensile', confrontoOrtaggio='tutti';
+function confronto(a){
+ const anni=anniDisponibili();
+ const norm=s=>String(s||'').trim().toLocaleLowerCase('it-IT');
+ const ortaggi=[...new Set(db.raccolti.map(x=>norm(x.coltura)).filter(Boolean))].sort((x,y)=>x.localeCompare(y,'it'));
+ if(confrontoOrtaggio!=='tutti'&&!ortaggi.includes(confrontoOrtaggio))confrontoOrtaggio='tutti';
+ const records=db.raccolti.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.data||'') && Number.isFinite(Number(x.q)) && Number(x.q)>0 && (confrontoOrtaggio==='tutti'||norm(x.coltura)===confrontoOrtaggio));
+ const somma=(anno,mese)=>records.filter(x=>Number(x.data.slice(0,4))===anno && (!mese||Number(x.data.slice(5,7))===mese)).reduce((sum,x)=>sum+Number(x.q),0);
+ const count=(anno,mese)=>records.filter(x=>Number(x.data.slice(0,4))===anno && (!mese||Number(x.data.slice(5,7))===mese)).length;
+ const mesi=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+ const righe=confrontoTipo==='mensile'?mesi.map((m,i)=>({label:m,mese:i+1})):ortaggi.map(n=>({label:n,ortaggio:n}));
+ const annuali=anni.map(y=>somma(y));
+ const max=Math.max(1,...annuali);
+ a.innerHTML=`<h2>📈 Confronto raccolti</h2><div class="card"><div class="form"><label>Visualizzazione<select id="tipoConfronto" onchange="confrontoTipo=this.value;render()"><option value="mensile" ${confrontoTipo==='mensile'?'selected':''}>Confronto mensile</option><option value="ortaggi" ${confrontoTipo==='ortaggi'?'selected':''}>Confronto per ortaggio</option></select></label><label>Filtra ortaggio<select id="ortaggioConfronto" onchange="confrontoOrtaggio=this.value;render()"><option value="tutti">Tutti gli ortaggi</option>${ortaggi.map(n=>`<option value="${esc(n)}" ${n===confrontoOrtaggio?'selected':''}>${esc(n)}</option>`).join('')}</select></label></div><p class="muted">Le celle con — non hanno pesate registrate. Gli anni futuri saranno aggiunti automaticamente quando inserirai nuove pesate.</p><div style="overflow-x:auto"><table><thead><tr><th>${confrontoTipo==='mensile'?'Mese':'Ortaggio'}</th>${anni.map(y=>`<th>${y}</th>`).join('')}</tr></thead><tbody>${righe.map(r=>`<tr><td><b>${esc(r.label)}</b></td>${anni.map(y=>{let kg=confrontoTipo==='mensile'?somma(y,r.mese):db.raccolti.filter(x=>Number((x.data||'').slice(0,4))===y&&norm(x.coltura)===r.ortaggio).reduce((s,x)=>s+(Number(x.q)||0),0);let n=confrontoTipo==='mensile'?count(y,r.mese):db.raccolti.filter(x=>Number((x.data||'').slice(0,4))===y&&norm(x.coltura)===r.ortaggio).length;return `<td>${n?kg.toFixed(3)+' kg':'—'}</td>`}).join('')}</tr>`).join('')||`<tr><td colspan="${anni.length+1}">Nessun raccolto registrato.</td></tr>`}<tr><th>Totale annata</th>${anni.map((y,i)=>`<th>${count(y)?annuali[i].toFixed(3)+' kg':'—'}</th>`).join('')}</tr></tbody></table></div></div>
+ <div class="card" style="margin-top:16px"><h3>📊 Grafico produzione annuale</h3><p class="muted">Quantità in kg ${confrontoOrtaggio==='tutti'?'di tutti gli ortaggi':'di '+esc(confrontoOrtaggio)}.</p>${anni.map((y,i)=>`<div style="margin:14px 0"><div class="rowbuttons"><b>${y}</b><span>${count(y)?annuali[i].toFixed(3)+' kg':'Nessuna pesata'}</span></div><div class="bar"><span style="display:block;width:${count(y)?100*annuali[i]/max:0}%;height:100%;min-height:10px"></span></div></div>`).join('')}</div>
+ <div class="card" style="margin-top:16px"><h3>📉 Andamento mensile delle annate</h3><p class="muted">Ogni linea rappresenta un anno. Passa il mouse sui punti per leggere i kg; su telefono consulta anche la tabella sopra. Le annate senza pesate non vengono tracciate.</p><div style="overflow-x:auto"><svg role="img" aria-label="Grafico a linee dei raccolti mensili per annata" viewBox="0 0 920 350" style="width:100%;min-width:560px;max-height:410px;background:#fff;border:1px solid #e5eae3;border-radius:12px">${graficoMensileSVG(anni,records)}</svg></div><p class="muted">${anni.filter(y=>records.some(r=>Number(r.data.slice(0,4))===y)).map((y,i)=>`<span style="display:inline-block;margin-right:14px"><span style="display:inline-block;width:16px;height:4px;background:${coloriGrafico[anni.indexOf(y)%coloriGrafico.length]};vertical-align:middle"></span> ${y}</span>`).join('')||'Nessuna pesata da rappresentare'}</p></div>
+ <div class="rowbuttons" style="margin-top:16px"><button onclick="exportRaccoltiCSV()">Esporta pesate CSV</button><button class="secondary" onclick="page='raccolti';render()">Torna ai raccolti</button></div>`;
+}
+function exportRaccoltiCSV(){let rows=[['Data','Annata','Ortaggio','Peso kg','Note'],...db.raccolti.map(x=>[x.data,(x.data||'').slice(0,4),x.coltura,x.q,x.note])];let csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');let u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download='raccolti-per-annata.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function del(type,i){if(confirm("Eliminare questa voce?")){let old=db[type][i];if((type==='colture'||type==='alberi')&&old&&old.pid){db.mappa.forEach(x=>{if(x.plantId===old.pid)x.plantId=''});db.fotoSchede=db.fotoSchede.filter(f=>f.plantId!==old.pid);if(type==='alberi')db.eventiFrutteto=db.eventiFrutteto.filter(f=>f.plantId!==old.pid)}db[type].splice(i,1);if(type==='colture'){db.foto=db.foto.filter(f=>f.indice!==i).map(f=>({...f,indice:f.indice>i?f.indice-1:f.indice}))}save()}}
+
+function trattamenti(a){a.innerHTML=`<h2>Trattamenti e dosaggi</h2><div class="card"><h3>Registra trattamento</h3><div class="form">
+<input id="x1" placeholder="Coltura" required><input id="x2" placeholder="Problema o parassita"><select id="xCatalog" onchange="selezionaProdotto('trattamenti')"><option value="">Scegli dall’archivio (facoltativo)</option>${opzioniProdotti("trattamenti")}</select><input id="x3" placeholder="Prodotto" required>
+<input id="x4" type="number" min="0" step="any" placeholder="Dose (numero)"><select id="x5"><option>ml/L</option><option>g/L</option><option>ml/10 L</option><option>g/10 L</option><option>ml</option><option>g</option></select>
+<input id="x6" type="number" min="0" step="any" placeholder="Acqua utilizzata (L)"><input id="x7" type="date"><input id="x8" type="number" min="0" step="1" placeholder="Carenza (giorni)"><label>Quando rifare il trattamento?<input id="x9" type="date" title="Data del prossimo trattamento"></label><input id="x10" placeholder="Note"><button onclick="addTrattamento()">Salva trattamento</button></div><p class="muted">Usa solo dosi e tempi di carenza riportati sull'etichetta autorizzata del prodotto.</p></div>
+<div class="card" style="margin-top:15px;overflow-x:auto"><h3>Storico trattamenti</h3><table><tr><th>Data</th><th>Coltura</th><th>Prodotto</th><th>Dosaggio</th><th>Acqua</th><th>Carenza</th><th>Prossimo</th><th>Note</th><th>Azioni</th></tr>${db.trattamenti.map((x,i)=>`<tr><td>${esc(x.data)}</td><td>${esc(x.coltura)}</td><td>${esc(x.prodotto)}<div class="muted">${esc(x.problema)}</div></td><td>${esc(x.dose)} ${esc(x.unita)}</td><td>${esc(x.acqua)} L</td><td>${x.carenza!==''&&x.carenza!=null?esc(x.carenza)+' giorni — dal '+esc(addDays(x.data,x.carenza)):'Non indicata'}</td><td>${esc(x.prossimo)}</td><td>${esc(x.note)}</td><td><button class="secondary" onclick="ripetiIntervento('trattamenti',${i})">↻ Ripeti</button> <button class="danger" onclick="del('trattamenti',${i})">Elimina</button></td></tr>`).join("")}</table></div>`}
+function addTrattamento(){if(!x1.value.trim()||!x3.value.trim()||!x7.value)return alert("Inserisci coltura, prodotto e data");if(window.ripetizione?.tipo==='trattamenti' && db.trattamenti[window.ripetizione.indice])db.trattamenti[window.ripetizione.indice].prossimo='';window.ripetizione=null;scaricaDaMagazzino("trattamenti",xCatalog.value,x4.value,x5.value,x6.value);db.trattamenti.push({coltura:x1.value,problema:x2.value,prodotto:x3.value,dose:x4.value,unita:x5.value,acqua:x6.value,data:x7.value,carenza:x8.value,prossimo:x9.value,note:x10.value});save()}
+
+
+let mapSelected=null,mapDraft=null,mapDrag=null;
+
+let schedaCorrente=null;
+function uidPianta(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,9)}
+function ensurePlantIds(){
+ for(const x of db.colture)if(!x.pid)x.pid=uidPianta();
+ for(const x of db.alberi)if(!x.pid)x.pid=uidPianta();
+}
+ensurePlantIds();
+function catalogoPiante(){
+ return [...db.colture.map((x,i)=>({id:x.pid,kind:'coltura',i,nome:x.nome,varieta:x.var||'',data:x.data||'',pos:x.pos||'',note:x.note||''})),
+ ...db.alberi.map((x,i)=>({id:x.pid,kind:'albero',i,nome:x.specie,varieta:x.varieta||'',data:x.data||'',pos:x.pos||'',note:x.note||''}))];
+}
+function piantaById(id){return catalogoPiante().find(p=>p.id===id)}
+function mapLinked(x){return x.plantId?piantaById(x.plantId):null}
+function mapLinkOptions(selected){
+ return '<option value="">— Nessun collegamento —</option>'+catalogoPiante().map(p=>`<option value="${esc(p.id)}" ${selected===p.id?'selected':''}>${p.kind==='albero'?'🌳':'🌿'} ${esc(p.nome)}${p.varieta?' — '+esc(p.varieta):''}</option>`).join('');
+}
+function apriScheda(id){if(!piantaById(id))return alert('Questa pianta non è più presente nell’archivio.');schedaCorrente=id;page='dettaglio';render()}
+function creaPiantaDaMappa(){
+ let i=mapSelected;if(i===null||!db.mappa[i])return alert('Seleziona prima un elemento della mappa.');
+ let x=db.mappa[i],kind=confirm('Vuoi registrare «'+x.nome+'» come ALBERO DA FRUTTO?\nOK = Albero, Annulla = Coltura');
+ let id=uidPianta();
+ if(kind)db.alberi.push({pid:id,specie:x.nome,varieta:'',data:'',sede:'Piena terra',pos:'Mappa orto',note:x.note||''});
+ else db.colture.push({pid:id,nome:x.nome,var:'',data:'',pos:'Mappa orto',note:x.note||''});
+ x.plantId=id;save();apriScheda(id);
+}
+function salvaLinkMappa(){
+ if(mapSelected===null||!db.mappa[mapSelected])return;
+ db.mappa[mapSelected].plantId=document.getElementById('mapPlantLink').value||'';
+ save();
+}
+function apriSchedaMappa(){let x=db.mappa[mapSelected];if(!x)return;let p=mapLinked(x);if(!p)return alert('Collega prima una pianta esistente oppure creane una nuova.');apriScheda(p.id)}
+
+let filtroTrappole='tutte';
+function trappole(a){
+ const trees=catalogoPiante().filter(x=>x.kind==='albero');
+ const all=db.trappole.map((x,i)=>({...x,i})),visible=all.filter(x=>filtroTrappole==='tutte'||x.stato===filtroTrappole);
+ const today=localDay(new Date());
+ a.innerHTML=`<h2>🪤 Trappole e monitoraggio insetti</h2>
+ <div class="card"><p class="muted">Registra trappole a feromoni, cromotropiche o alimentari, i controlli delle catture e le scadenze. Le catture sono un dato di monitoraggio, non indicano da sole la necessità di trattamenti.</p><h3>Nuova trappola</h3><div class="form">
+ <label>Nome / identificativo<input id="trNome" placeholder="Es. Trappola 1 - Melo"></label>
+ <label>Albero collegato<select id="trAlbero"><option value="">Nessuno / zona orto</option>${trees.map(x=>`<option value="${esc(x.id)}">${esc(x.nome)} · ${esc(x.varieta||'')}</option>`).join('')}</select></label>
+ <label>Scarica dal magazzino<select id="trStock"><option value="">Nessuno scarico</option>${db.prodotti.filter(x=>x.tipo==='trappole'&&x.unita==='pz').map(x=>`<option value="${esc(x.id)}">${esc(x.nome)} — ${esc(x.giacenza)} pz</option>`).join('')}</select></label><label>Posizione<input id="trPos"  placeholder="Es. filare nord, melo Gala"></label>
+ <label>Tipo<select id="trTipo"><option>Feromoni</option><option>Cromotropica</option><option>Alimentare</option><option>Altro</option></select></label>
+ <label>Insetto da monitorare<input id="trInsetto" placeholder="Es. carpocapsa, mosca della frutta"></label>
+ <label>Installazione<input id="trData" type="date" value="${today}"></label>
+ <label>Prossimo controllo<input id="trProssimo" type="date"></label>
+ <label>Scadenza attrattivo / sostituzione<input id="trScadenza" type="date"></label>
+ <label>Note<input id="trNote" placeholder="Modello, esca, lotto..."></label>
+ </div><button onclick="salvaTrappola()">＋ Aggiungi trappola</button></div>
+ <div class="card" style="margin-top:16px"><div class="rowbuttons"><h3>Trappole registrate (${visible.length})</h3><select id="trFiltro" onchange="filtroTrappole=this.value;render()"><option value="tutte" ${filtroTrappole==='tutte'?'selected':''}>Tutte</option><option value="Attiva" ${filtroTrappole==='Attiva'?'selected':''}>Attive</option><option value="Rimossa" ${filtroTrappole==='Rimossa'?'selected':''}>Rimosse</option></select></div>
+ ${visible.length?visible.map(x=>{const checks=db.controlliTrappole.filter(c=>c.trapId===x.id).sort((a,b)=>b.data.localeCompare(a.data));const tot=checks.reduce((n,c)=>n+Number(c.catture||0),0);const p=piantaById(x.plantId);const stock=db.prodotti.find(p=>p.id===x.prodottoId);return `<div class="card" style="margin:12px 0;background:#fbfdfb"><div class="rowbuttons"><h3>${esc(x.nome)}</h3><span class="muted">${esc(x.stato)}</span></div>
+ <p><b>${esc(x.tipo)}</b> · ${esc(x.insetto||'Insetto non indicato')} · ${esc(x.posizione||'Posizione non indicata')}</p>
+ ${p?`<p>🌳 ${esc(p.nome)} · ${esc(p.varieta||'')}</p>`:''}
+ <p class="muted">Installata: ${esc(x.data||'—')} · Prossimo controllo: ${esc(x.prossimo||'—')} · Sostituzione attrattivo: ${esc(x.scadenza||'—')}</p>
+ <p class="muted">Magazzino: ${stock?esc(stock.nome):'Nessun prodotto collegato'}</p><p><b>Controlli:</b> ${checks.length} · <b>Catture registrate:</b> ${tot}</p>
+ <div class="rowbuttons"><button class="secondary" onclick="nuovoControlloTrappola('${x.id}')">＋ Registra controllo</button><button class="secondary" onclick="modificaTrappola('${x.id}')">Modifica</button><button class="secondary" onclick="statoTrappola('${x.id}')">${x.stato==='Attiva'?'Segna rimossa':'Riattiva'}</button><button class="danger" onclick="eliminaTrappola('${x.id}')">Elimina</button></div>
+ ${checks.length?`<div class="scroll"><table><tr><th>Data</th><th>Catture</th><th>Note</th><th>Azioni</th></tr>${checks.map(c=>`<tr><td>${esc(c.data)}</td><td>${esc(c.catture)}</td><td>${esc(c.note||'')}</td><td><button class="secondary" onclick="modificaControllo('${c.id}')">Modifica</button> <button class="danger" onclick="eliminaControllo('${c.id}')">Elimina</button></td></tr>`).join('')}</table></div>`:''}</div>`}).join(''):'<p class="muted">Nessuna trappola per questo filtro.</p>'}</div>`;
+}
+function salvaTrappola(){
+ const nome=trNome.value.trim(),data=trData.value;
+ if(!nome||!data)return alert('Inserisci nome e data di installazione.');
+ const stockId=trStock.value,product=stockId?db.prodotti.find(x=>x.id===stockId):null;
+ if(stockId&&(!product||product.tipo!=='trappole'||product.unita!=='pz'||Number(product.giacenza)<1))return alert('Scorta trappole insufficiente.');
+ const trapId='trap_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+ if(product){product.giacenza=Number(product.giacenza)-1;db.movimentiMagazzino.push({id:'mv_'+Date.now()+Math.random(),prodottoId:product.id,data,prodotto:product.nome,tipo:'Installazione trappola',quantita:-1,unita:'pz',trapId});}
+ db.trappole.push({id:trapId,prodottoId:stockId,nome,plantId:trAlbero.value,posizione:trPos.value.trim(),tipo:trTipo.value,insetto:trInsetto.value.trim(),data,prossimo:trProssimo.value,scadenza:trScadenza.value,note:trNote.value.trim(),stato:'Attiva'});save();
+}
+function nuovoControlloTrappola(id){
+ const t=db.trappole.find(x=>x.id===id);if(!t)return;
+ const data=prompt('Data controllo (AAAA-MM-GG)',localDay(new Date()));if(data===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(data)||Number.isNaN(Date.parse(data)))return alert('Data non valida');
+ const q=prompt('Numero di insetti catturati', '0');if(q===null)return;
+ if(!/^\d+$/.test(q.trim()))return alert('Inserisci un numero intero non negativo.');
+ const note=prompt('Note del controllo (facoltative)','');if(note===null)return;
+ db.controlliTrappole.push({id:'ctrl_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),trapId:id,data,catture:Number(q),note:note.trim()});
+ const next=prompt('Data del prossimo controllo (AAAA-MM-GG; lascia vuoto per nessuna)',t.prossimo||'');if(next!==null){if(next&&!/^\d{4}-\d{2}-\d{2}$/.test(next))return alert('Controllo salvato, ma la prossima data non è valida.');t.prossimo=next;}
+ save();
+}
+function modificaTrappola(id){
+ const t=db.trappole.find(x=>x.id===id);if(!t)return;
+ for(const [key,label] of [['nome','Nome'],['posizione','Posizione'],['insetto','Insetto'],['prossimo','Prossimo controllo (AAAA-MM-GG)'],['scadenza','Sostituzione attrattivo (AAAA-MM-GG)'],['note','Note']]){
+  const val=prompt(label,t[key]||'');if(val===null)break;
+  if(['prossimo','scadenza'].includes(key)&&val&&!/^\d{4}-\d{2}-\d{2}$/.test(val)){alert('Data non valida');break;}
+  if(key==='nome'&&!val.trim()){alert('Il nome non può essere vuoto');break;}t[key]=val.trim();
+ }save();
+}
+function statoTrappola(id){const t=db.trappole.find(x=>x.id===id);if(!t)return;t.stato=t.stato==='Attiva'?'Rimossa':'Attiva';save()}
+function eliminaTrappola(id){if(!confirm('Eliminare la trappola e i controlli? Lo scarico resta in magazzino; usa ± Scorta per una restituzione effettiva.'))return;db.trappole=db.trappole.filter(x=>x.id!==id);db.controlliTrappole=db.controlliTrappole.filter(x=>x.trapId!==id);save()}
+function modificaControllo(id){const c=db.controlliTrappole.find(x=>x.id===id);if(!c)return;const val=prompt('Catture',String(c.catture));if(val===null)return;if(!/^\d+$/.test(val.trim()))return alert('Numero non valido');const note=prompt('Note',c.note||'');if(note===null)return;c.catture=Number(val);c.note=note.trim();save()}
+function eliminaControllo(id){if(confirm('Eliminare il controllo?')){db.controlliTrappole=db.controlliTrappole.filter(x=>x.id!==id);save()}}
+
+function schedaStorico(p){
+ const match=x=>String(x.coltura||'').trim().toLocaleLowerCase('it')===p.nome.trim().toLocaleLowerCase('it');
+ return [
+ ...db.irrigazioni.filter(match).map(x=>({data:x.data,tipo:'💧 Irrigazione',dettaglio:(x.litri||'')+' L · '+(x.note||'')})),
+ ...db.concimazioni.filter(match).map(x=>({data:x.data,tipo:'🌾 Concimazione',dettaglio:(x.prodotto||'')+' '+(x.q||'')+' '+(x.unita||'')+' · '+(x.note||'')})),
+ ...db.trattamenti.filter(match).map(x=>({data:x.data,tipo:'🧴 Trattamento',dettaglio:(x.prodotto||'')+' '+(x.dose||'')+' · '+(x.note||'')})),
+ ...db.attivita.filter(match).map(x=>({data:x.data,tipo:'📋 '+(x.tipo||'Attività'),dettaglio:x.note||''})),
+ ...db.raccolti.filter(match).map(x=>({data:x.data,tipo:'🍅 Raccolto',dettaglio:(x.q||'')+' kg · '+(x.note||'')}))
+ ].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')));
+}
+function dettaglioPianta(a){
+ let p=piantaById(schedaCorrente);if(!p){a.innerHTML='<h2>Scheda non disponibile</h2><button onclick="page=\'schede\';render()">Torna alle schede</button>';return}
+ let original=p.kind==='albero'?db.alberi[p.i]:db.colture[p.i],links=db.mappa.map((x,i)=>({...x,i})).filter(x=>x.plantId===p.id);
+ let photos=[...db.fotoSchede.map((x,i)=>({...x,idx:i})).filter(x=>x.plantId===p.id)];
+ // Le fotografie della vecchia scheda coltura rimangono visibili.
+ let legacy=p.kind==='coltura'?db.foto.map((x,i)=>({...x,idx:i})).filter(x=>x.indice===p.i):[];
+ let trapEvents=db.controlliTrappole.flatMap(c=>{const t=db.trappole.find(t=>t.id===c.trapId);return t&&t.plantId===p.id?[{data:c.data,tipo:'🪤 Controllo trappola',dettaglio:t.nome+' · '+c.catture+' catture'+(c.note?' · '+c.note:'')}]:[]});let diaryEvents=p.kind==='albero'?db.eventiFrutteto.filter(x=>x.plantId===p.id).map(x=>({data:x.data,tipo:'🌳 '+x.tipo,dettaglio:(x.stato||'')+(x.tipo==='Raccolta'?' · '+(x.kg||0)+' kg':'')+(x.note?' · '+x.note:'')})):[];
+ let events=[...schedaStorico(p),...diaryEvents,...trapEvents].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')));
+ a.innerHTML=`<div class="rowbuttons"><h2>${p.kind==='albero'?'🌳':'🌿'} Scheda: ${esc(p.nome)}</h2><button class="secondary" onclick="page='mappa';render()">← Torna alla mappa</button>${p.kind==='albero'?`<button class="secondary" onclick="apriDiarioAlbero('${p.id}')">🍎 Apri diario frutteto</button>`:''}</div>
+ <div class="card"><p class="muted">Identificativo stabile: ${esc(p.id)} · ${p.kind==='albero'?'Albero da frutto':'Coltura'}</p>
+ <div class="form"><label>Nome / specie<input id="sdNome" value="${esc(p.nome)}"></label><label>Varietà<input id="sdVar" value="${esc(p.varieta)}"></label><label>Data semina / impianto<input id="sdData" type="date" value="${esc(p.data)}"></label><label>Posizione<input id="sdPos" value="${esc(p.pos)}"></label>
+ <label>Stato di salute<select id="sdStato">${['Non indicato','Ottimo','Buono','Da controllare','In difficoltà'].map(v=>`<option ${original.stato===v?'selected':''}>${v}</option>`).join('')}</select></label>
+ ${p.kind==='albero'?`<label>Collocazione<select id="sdSede"><option ${original.sede==='Piena terra'?'selected':''}>Piena terra</option><option ${original.sede==='Vaso'?'selected':''}>Vaso</option></select></label>`:''}</div>
+ <label>Note e osservazioni<textarea id="sdNote">${esc(p.note)}</textarea></label><p><button onclick="salvaSchedaCompleta()">💾 Salva scheda</button></p></div>
+ <div class="card" style="margin-top:15px"><h3>🗺️ Posizioni sulla mappa</h3>${links.map(x=>`<p>${esc(x.nome)} · ${esc(mapType(x))} · X ${mapNum(x.x)}, Y ${mapNum(x.y)} m</p>`).join('')||'<p class="muted">Non ancora collegata a un elemento della mappa.</p>'}<button class="secondary" onclick="page='mappa';render()">Apri mappa</button></div>
+ <div class="card" style="margin-top:15px"><h3>📷 Foto della pianta</h3><p class="muted">Le immagini sono conservate nel browser e incluse nel backup. Foto troppo grandi possono esaurire lo spazio disponibile.</p><input id="sdFoto" type="file" accept="image/jpeg,image/png,image/webp"><button class="secondary" onclick="aggiungiFotoScheda()">Aggiungi foto</button>
+ <div class="grid" style="margin-top:12px">${photos.map(f=>`<div><img src="${f.src}" alt="Foto pianta" style="width:100%;height:160px;object-fit:cover;border-radius:10px"><p class="muted">${esc(f.data)}</p><button class="danger" onclick="eliminaFotoScheda(${f.idx})">Elimina</button></div>`).join('')}${legacy.map(f=>`<div><img src="${f.src}" alt="Foto precedente" style="width:100%;height:160px;object-fit:cover;border-radius:10px"><p class="muted">Foto precedente · ${esc(f.data)}</p></div>`).join('')}</div></div>
+ <div class="card" style="margin-top:15px"><h3>📋 Storico collegato (${events.length})</h3><p class="muted">Gli eventi del diario del frutteto sono collegati a questo albero. Gli altri interventi precedenti sono abbinati per nome della coltura e potrebbero includere piante omonime.</p>
+ ${events.map(e=>`<p><b>${esc(e.data||'—')}</b> · ${esc(e.tipo)}: ${esc(e.dettaglio)}</p>`).join('')||'<p class="muted">Nessun intervento registrato.</p>'}</div>`;
+}
+function salvaSchedaCompleta(){
+ let p=piantaById(schedaCorrente);if(!p)return;
+ let x=p.kind==='albero'?db.alberi[p.i]:db.colture[p.i];
+ if(!sdNome.value.trim())return alert('Il nome è obbligatorio');
+ if(p.kind==='albero'){x.specie=sdNome.value.trim();x.varieta=sdVar.value;x.sede=sdSede.value}
+ else{x.nome=sdNome.value.trim();x.var=sdVar.value}
+ x.data=sdData.value;x.pos=sdPos.value;x.stato=sdStato.value;x.note=sdNote.value;
+ db.mappa.filter(m=>m.plantId===p.id).forEach(m=>m.nome=sdNome.value.trim());
+ save();alert('Scheda salvata');
+}
+async function aggiungiFotoScheda(){
+ let f=document.getElementById('sdFoto').files[0];if(!f)return alert('Scegli una foto');
+ if(f.size>3*1024*1024)return alert('Scegli una foto inferiore a 3 MB');
+ try{let src=await new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)});
+ db.fotoSchede.push({plantId:schedaCorrente,src,data:localDay(new Date())});save()}
+ catch(e){alert('Non è stato possibile salvare la foto: '+e.message)}
+}
+function eliminaFotoScheda(i){if(confirm('Eliminare questa foto?')){db.fotoSchede.splice(i,1);save()}}
+
+const MAP_W=15,MAP_H=10;
+function mapItems(){return db.mappa}
+function mapType(x){return x.tipo||'pianta'}
+function mapClamp(v,max){return Math.min(max,Math.max(0,Number(v)||0))}
+function mapNum(v){return Number(v).toFixed(2).replace(/\.00$/,'')}
+function mapShape(x,i){let type=mapType(x),w=type==='pianta'?.42:Math.max(.3,Number(x.w)||2),h=type==='pianta'?.42:Math.max(.3,Number(x.h)||1),left=mapClamp(x.x,15),top=mapClamp(x.y,10),selected=mapSelected===i;
+ let style=`position:absolute;left:${left/15*100}%;top:${top/10*100}%;width:${w/15*100}%;height:${h/10*100}%;min-width:${type==='pianta'?'22px':'0'};min-height:${type==='pianta'?'22px':'0'};transform:${type==='pianta'?'translate(-50%,-50%)':'none'};border:${selected?'3px solid #1d4ed8':'2px solid #47754a'};background:${type==='aiuola'?'#9ed28e':type==='filare'?'#e8c68e':'#dff2d3'};border-radius:${type==='pianta'?'50%':'7px'};display:flex;align-items:center;justify-content:center;text-align:center;cursor:grab;touch-action:none;user-select:none;z-index:${selected?5:2};overflow:hidden;font-size:clamp(10px,1.1vw,14px);padding:2px;`;
+ return `<div class="map-object" data-index="${i}" role="button" tabindex="0" aria-label="${esc(type)}: ${esc(x.nome)}" style="${style}" title="${esc(x.nome)} — trascina per spostare"><span style="pointer-events:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${type==='pianta'?'🌱 ':type==='filare'?'〰️ ':''}${esc(x.nome)}</span></div>`}
+function mappa(a){let options=[...db.colture.map(x=>x.nome),...db.alberi.map(x=>x.specie)].filter(Boolean);let unique=[...new Set(options)];a.innerHTML=`<h2>🗺️ Mappa dell'orto — 15 × 10 m</h2><p class="muted">Scegli cosa inserire, scrivi il nome, poi clicca sulla mappa. Trascina gli elementi per spostarli. Le modifiche vengono salvate automaticamente.</p>
+<div class="card"><div class="form"><label>Tipo<select id="mapTipo" onchange="mapChangeType()"><option value="aiuola">🟩 Aiuola</option><option value="filare">🟨 Filare</option><option value="pianta">🌱 Pianta singola</option></select></label><label>Nome<input id="mapNome" list="mapNomi" placeholder="Es. pomodori, melo Gala"><datalist id="mapNomi">${unique.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist></label><label id="mapWidthLabel">Larghezza (m)<input id="mapW" type="number" min="0.3" max="15" step="0.1" value="2"></label><label id="mapHeightLabel">Altezza (m)<input id="mapH" type="number" min="0.3" max="10" step="0.1" value="1"></label><label>Note<input id="mapNote" placeholder="Facoltative"></label><label>Collega a una scheda esistente<select id="mapPlantLink">${mapLinkOptions(null)}</select></label></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" onclick="mapModeAdd()" id="mapAddButton">➕ Inserisci sulla mappa</button><button type="button" class="secondary" onclick="mapClearSelection()">Annulla selezione</button><button type="button" class="secondary" id="mapOpenSheet" onclick="apriSchedaMappa()" disabled>📒 Apri scheda</button><button type="button" class="secondary" id="mapCreateSheet" onclick="creaPiantaDaMappa()" disabled>➕ Crea scheda</button><button type="button" class="secondary" id="mapSaveLink" onclick="salvaLinkMappa()" disabled>🔗 Collega scheda</button><button type="button" class="danger" id="mapDelete" onclick="mapDeleteSelected()" disabled>Elimina selezionato</button></div><p id="mapStatus" class="muted" aria-live="polite">Inserisci nome e scegli «Inserisci sulla mappa».</p></div>
+<div class="card" style="margin-top:15px"><div style="display:flex;justify-content:space-between;gap:8px"><b>← 15 metri →</b><span class="muted">Vista dall'alto · 1 quadretto = 1 m</span></div><div id="ortoMap" style="position:relative;width:100%;aspect-ratio:1.5;min-height:210px;max-height:650px;margin:12px auto;touch-action:none;cursor:crosshair;border:3px solid #65805a;border-radius:8px;background-color:#edf7e9;background-image:linear-gradient(to right,#bfd3b8 1px,transparent 1px),linear-gradient(to bottom,#bfd3b8 1px,transparent 1px);background-size:6.6666667% 10%;overflow:hidden" aria-label="Mappa interattiva dell'orto">${db.mappa.map(mapShape).join('')}</div><b>↕ 10 metri</b><p class="muted">Per modificare un elemento cliccaci sopra. Per spostarlo, trascinalo. Su telefono usa il dito.</p></div>
+<div class="card" style="margin-top:15px"><h3>Elementi sulla mappa (${db.mappa.length})</h3>${db.mappa.map((x,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #e5eae3;padding:8px 0"><span><b>${esc(x.nome)}</b> · ${mapType(x)} · X ${mapNum(x.x)}, Y ${mapNum(x.y)} m ${mapLinked(x)?'· 📒 Scheda collegata':''}</span><button type="button" class="secondary" onclick="mapSelect(${i})">Seleziona</button></div>`).join('')||'<p class="muted">Nessun elemento: crea la prima aiuola!</p>'}</div>`;mapChangeType();mapBind();if(mapSelected!==null&&db.mappa[mapSelected])mapHighlight()}
+function mapChangeType(){let t=document.getElementById('mapTipo').value;let visible=t!=='pianta';document.getElementById('mapWidthLabel').style.display=visible?'':'none';document.getElementById('mapHeightLabel').style.display=visible?'':'none';if(t==='filare'&&Number(document.getElementById('mapH').value)===1)document.getElementById('mapH').value=.5}
+function mapModeAdd(){let name=document.getElementById('mapNome').value.trim(),type=document.getElementById('mapTipo').value,w=type==='pianta'?.42:Number(document.getElementById('mapW').value),h=type==='pianta'?.42:Number(document.getElementById('mapH').value);if(!name)return alert('Scrivi il nome della pianta, aiuola o filare.');if(!(w>0&&w<=15&&h>0&&h<=10))return alert('Dimensioni non valide.');mapDraft={nome:name,tipo:type,w,h,note:document.getElementById('mapNote').value,plantId:document.getElementById('mapPlantLink').value||''};mapSelected=null;document.getElementById('mapStatus').textContent='Ora clicca nel punto della mappa dove vuoi inserire «'+name+'».';mapHighlight()}
+function mapCoords(e){let r=document.getElementById('ortoMap').getBoundingClientRect();return {x:mapClamp((e.clientX-r.left)/r.width*15,15),y:mapClamp((e.clientY-r.top)/r.height*10,10)}}
+function mapBind(){let map=document.getElementById('ortoMap');map.addEventListener('pointerdown',e=>{let el=e.target.closest('.map-object');if(el){let i=Number(el.dataset.index);mapSelected=i;mapDraft=null;let x=db.mappa[i];mapDrag={i,startX:e.clientX,startY:e.clientY,x:Number(x.x),y:Number(x.y),moved:false};el.setPointerCapture(e.pointerId);mapHighlight();return}if(mapDraft){let p=mapCoords(e),x={...mapDraft,x:mapClamp(p.x,mapDraft.tipo==='pianta'?15:15-mapDraft.w),y:mapClamp(p.y,mapDraft.tipo==='pianta'?10:10-mapDraft.h)};db.mappa.push(x);mapDraft=null;mapSelected=db.mappa.length-1;save();return}document.getElementById('mapStatus').textContent='Per inserire: scrivi il nome, premi «Inserisci sulla mappa», poi clicca qui.'});
+map.addEventListener('pointermove',e=>{if(!mapDrag)return;let d=mapDrag,el=map.querySelector(`[data-index="${d.i}"]`);if(!el)return;let r=map.getBoundingClientRect(),obj=db.mappa[d.i],type=mapType(obj),w=Number(obj.w)||2,h=Number(obj.h)||1;if(Math.abs(e.clientX-d.startX)+Math.abs(e.clientY-d.startY)>3)d.moved=true;let x=mapClamp(d.x+(e.clientX-d.startX)/r.width*15,type==='pianta'?15:15-w),y=mapClamp(d.y+(e.clientY-d.startY)/r.height*10,type==='pianta'?10:10-h);obj.x=Number(x.toFixed(2));obj.y=Number(y.toFixed(2));el.style.left=(x/15*100)+'%';el.style.top=(y/10*100)+'%'});
+let finish=()=>{if(!mapDrag)return;let moved=mapDrag.moved;mapDrag=null;if(moved)save();else mapSelect(mapSelected)};map.addEventListener('pointerup',finish);map.addEventListener('pointercancel',finish);
+map.addEventListener('keydown',e=>{let el=e.target.closest('.map-object');if(el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();mapSelect(Number(el.dataset.index))}})}
+function mapHighlight(){document.querySelectorAll('.map-object').forEach(el=>{el.style.outline=Number(el.dataset.index)===mapSelected?'3px solid #2563eb':'none'});let b=document.getElementById('mapDelete');if(b)b.disabled=mapSelected===null;for(const id of ['mapCreateSheet','mapSaveLink']){let e=document.getElementById(id);if(e)e.disabled=mapSelected===null}let open=document.getElementById('mapOpenSheet');if(open)open.disabled=mapSelected===null||!db.mappa[mapSelected]||!mapLinked(db.mappa[mapSelected])}
+function mapSelect(i){if(!db.mappa[i])return;mapSelected=i;mapDraft=null;let x=db.mappa[i];document.getElementById('mapTipo').value=mapType(x);document.getElementById('mapNome').value=x.nome;document.getElementById('mapW').value=x.w||2;document.getElementById('mapH').value=x.h||1;document.getElementById('mapNote').value=x.note||'';document.getElementById('mapPlantLink').value=x.plantId||'';mapChangeType();document.getElementById('mapStatus').textContent='Selezionato: '+x.nome+'. Trascinalo per spostarlo. Per cambiare nome o dimensioni premi «Salva modifiche».';document.getElementById('mapAddButton').textContent='💾 Salva modifiche';document.getElementById('mapAddButton').onclick=mapUpdateSelected;mapHighlight()}
+function mapUpdateSelected(){if(mapSelected===null)return mapModeAdd();let x=db.mappa[mapSelected],name=document.getElementById('mapNome').value.trim(),type=document.getElementById('mapTipo').value,w=type==='pianta'?.42:Number(document.getElementById('mapW').value),h=type==='pianta'?.42:Number(document.getElementById('mapH').value);if(!name||!(w>0&&w<=15&&h>0&&h<=10))return alert('Controlla nome e dimensioni');Object.assign(x,{nome:name,tipo,w,h,note:document.getElementById('mapNote').value,plantId:document.getElementById('mapPlantLink').value||'',x:mapClamp(x.x,type==='pianta'?15:15-w),y:mapClamp(x.y,type==='pianta'?10:10-h)});save()}
+function mapClearSelection(){mapSelected=null;mapDraft=null;let b=document.getElementById('mapAddButton');b.textContent='➕ Inserisci sulla mappa';b.onclick=mapModeAdd;document.getElementById('mapStatus').textContent='Inserisci nome e scegli «Inserisci sulla mappa».';mapHighlight()}
+function mapDeleteSelected(){if(mapSelected===null)return;if(!confirm('Eliminare questo elemento dalla mappa?'))return;db.mappa.splice(mapSelected,1);mapSelected=null;mapDraft=null;save()}
+function dati(a){a.innerHTML=`<h2>Backup e ripristino</h2><div class="card"><h3>Esporta tutti i dati</h3><p>Scarica un file JSON da conservare sul computer. Contiene colture, attività, trattamenti, raccolti, mappa, irrigazioni, concimazioni e foto.</p><button onclick="backup()">Scarica backup</button></div><div class="card" style="margin-top:15px"><h3>Importa un backup</h3><p class="muted">L'importazione sostituisce i dati attuali. Esporta prima un backup se vuoi conservarli.</p><input type="file" id="restore" accept=".json,application/json"><button onclick="restoreData()">Ripristina dati</button></div><p class="muted">I dati sono salvati anche in questo browser. La sincronizzazione cloud è disponibile nella sezione ☁️ Sincronizzazione dopo il collegamento. Conserva sempre un backup JSON.</p>`}
+async function restoreData(){let f=document.getElementById('restore').files[0];if(!f)return alert('Seleziona un file JSON');try{let v=JSON.parse(await f.text());if(!v||!Array.isArray(v.colture)||!Array.isArray(v.attivita)||!Array.isArray(v.raccolti))throw Error('Formato non valido');if(!confirm('Sostituire tutti i dati attuali?'))return;db={...v};['trattamenti','mappa','irrigazioni','concimazioni','foto','alberi','prodotti','movimentiMagazzino','fotoSchede','pianiIrrigazione','semine','rotazioni','spese','prezziRaccolti','eventiFrutteto','lavoriAnnuali','trappole','controlliTrappole','sementi','movimentiSementi'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[]});if(!db.impostazioniMeteo)db.impostazioniMeteo={localita:'Forlì',lat:44.2226,lon:12.0408,gelata:2,caldo:32,pioggia:10};ensurePlantIds();normalizzaMovimentiMagazzino();cloudDirty=true;save();alert('Backup ripristinato localmente. Controlla la sezione Cloud prima di sincronizzare.')}catch(e){alert('Impossibile importare: '+e.message)}}
+
+function backup(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="backup-orto.json";a.click();URL.revokeObjectURL(u)}
+
+
+// Archivio locale: le schede importate sono riferimenti da verificare, non autorizzazioni d'uso.
+
+function avvisiMagazzino(){
+ const today=localDay(new Date()),soon=addDays(today,30);
+ return db.prodotti.flatMap(p=>{
+ const a=[];
+ if(p.scadenza&&p.scadenza<today)a.push({nome:p.nome,motivo:'Prodotto scaduto il '+p.scadenza+'. Verifica le indicazioni del produttore per gestione e smaltimento.'});
+ else if(p.scadenza&&p.scadenza<=soon)a.push({nome:p.nome,motivo:'Scadenza vicina: '+p.scadenza});
+ if(Number(p.minimo)>0&&Number(p.giacenza||0)<=Number(p.minimo))a.push({nome:p.nome,motivo:'Scorta bassa: '+(p.giacenza||0)+' '+p.unita+' (soglia '+p.minimo+')'});
+ return a;
+ });
+}
+function modificaProdotto(i){
+ const p=db.prodotti[i];if(!p)return;
+ const nome=prompt('Nome prodotto',p.nome);if(nome===null)return;if(!nome.trim())return alert('Nome obbligatorio');
+ const lotto=prompt('Lotto',p.lotto||'');if(lotto===null)return;
+ const scadenza=prompt('Scadenza AAAA-MM-GG (vuoto se assente)',p.scadenza||'');if(scadenza===null)return;
+ if(scadenza&&!/^\d{4}-\d{2}-\d{2}$/.test(scadenza))return alert('Formato data non valido');
+ const minimo=prompt('Scorta minima in '+p.unita,p.minimo||0);if(minimo===null)return;
+ const v=Number(minimo.replace(',','.'));if(!Number.isFinite(v)||v<0)return alert('Scorta minima non valida');
+ const fornitore=prompt('Fornitore',p.fornitore||'');if(fornitore===null)return;
+ const costo=prompt('Costo acquisto in euro',p.costo||0);if(costo===null)return;
+ const c=Number(costo.replace(',','.'));if(!Number.isFinite(c)||c<0)return alert('Costo non valido');
+ p.nome=nome.trim();p.lotto=lotto;p.scadenza=scadenza;p.minimo=v;p.fornitore=fornitore;p.costo=c;save();
+}
+function esportaMagazzinoCSV(){
+ const cols=['Tipo','Prodotto','Produttore','Composizione','Giacenza','Unita','Scorta minima','Lotto','Scadenza','Fornitore','Costo EUR','Fonte'];
+ const values=db.prodotti.map(p=>[p.tipo,p.nome,p.produttore,p.composizione,p.giacenza,p.unita,p.minimo||0,p.lotto||'',p.scadenza||'',p.fornitore||'',p.costo||0,p.fonte||'']);
+ const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const csv='\uFEFF'+[cols,...values].map(row=>row.map(quote).join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='magazzino-orto.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+
+function normalizzaMovimentiMagazzino(){
+ db.prodotti.forEach(p=>{if(!p.id)p.id='pr_'+Math.random().toString(36).slice(2)+Date.now().toString(36)});
+ db.movimentiMagazzino.forEach(m=>{
+  if(!m.id)m.id='mv_'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  if(!m.prodottoId){const matches=db.prodotti.filter(p=>p.nome===m.prodotto&&p.unita===m.unita);if(matches.length===1)m.prodottoId=matches[0].id;}
+ });
+}
+normalizzaMovimentiMagazzino();
+function correggiMovimento(i){
+ const m=db.movimentiMagazzino[i];if(!m)return;
+ const p=db.prodotti.find(p=>p.id===m.prodottoId);
+ if(!p)return alert('Impossibile correggere: il prodotto originale non è identificabile con certezza. Usa ± Scorta per una rettifica manuale.');
+ const input=prompt('Nuova variazione in '+p.unita+' (es. 50 o -10)',String(m.quantita));if(input===null)return;
+ const n=Number(input.trim().replace(',','.'));
+ if(!input.trim()||!Number.isFinite(n)||n===0)return alert('Quantità non valida');
+ const old=Number(m.quantita),difference=n-old;
+ if(!Number.isFinite(old))return alert('Movimento non valido');
+ if(Number(p.giacenza||0)+difference<0&&!confirm('La giacenza diventerà negativa. Continuare?'))return;
+ if(!confirm('Correggere il movimento da '+old+' a '+n+' '+p.unita+'? La giacenza cambierà di '+difference+' '+p.unita+'.'))return;
+ p.giacenza=Math.round((Number(p.giacenza||0)+difference)*10000)/10000;
+ m.quantita=n;m.modificato=localDay(new Date());m.tipo=m.tipo+' (corretto)';save();
+}
+function annullaMovimento(i){
+ const m=db.movimentiMagazzino[i];if(!m)return;
+ const p=db.prodotti.find(p=>p.id===m.prodottoId);
+ if(!p)return alert('Impossibile annullare: prodotto non identificabile con certezza. Usa ± Scorta per correggere manualmente.');
+ const q=Number(m.quantita);
+ if(!Number.isFinite(q))return alert('Movimento non valido');
+ const next=Number(p.giacenza||0)-q;
+ if(next<0&&!confirm('Annullando il movimento, la giacenza diventerà negativa. Continuare?'))return;
+ if(!confirm('Annullare il movimento di '+q+' '+p.unita+' per '+p.nome+'? La giacenza verrà ricalcolata.'))return;
+ p.giacenza=Math.round(next*10000)/10000;
+ db.movimentiMagazzino.splice(i,1);save();
+}
+function opzioniProdotti(tipo){return db.prodotti.map((p,i)=>p.tipo===tipo?`<option value="${i}">${esc(p.nome)}${p.produttore?' — '+esc(p.produttore):''}</option>`:'').join('')}
+function selezionaProdotto(tipo){let id=tipo==='concimi'?'fCatalog':'xCatalog',i=document.getElementById(id).value,p=db.prodotti[Number(i)];if(i===''||!p)return;document.getElementById(tipo==='concimi'?'f3':'x3').value=p.nome;if(tipo==='trattamenti'){document.getElementById('x2').value=p.impiego||'';if(p.dose)document.getElementById('x4').value=p.dose;if(p.doseUnita)document.getElementById('x5').value=p.doseUnita;if(p.carenza!=='')document.getElementById('x8').value=p.carenza;}alert('Scheda caricata. Controlla sempre l’etichetta attuale e le condizioni d’uso prima di registrare.');}
+function scaricaDaMagazzino(tipo,id,q,unita,acqua){if(id==='')return;let p=db.prodotti[Number(id)];if(!p||p.tipo!==tipo)return;let qty=Number(q),used=qty;if(tipo==='trattamenti'&&['ml/L','g/L','ml/10 L','g/10 L'].includes(unita)){if(!Number(acqua)||Number(acqua)<=0){alert('Acqua non indicata: giacenza non aggiornata automaticamente.');return}used=qty*Number(acqua)/(unita.includes('/10 L')?10:1);unita=unita.startsWith('ml')?'ml':'g'}
+if(!Number.isFinite(used)||used<=0)return;
+let base=p.unita,conv=unita===base?1:(unita==='g'&&base==='kg'||unita==='ml'&&base==='L')?.001:(unita==='kg'&&base==='g'||unita==='L'&&base==='ml')?1000:null;
+if(conv===null){alert('Unità non compatibili con il magazzino: nessuno scarico automatico.');return}let n=used*conv;p.giacenza=Math.round((Number(p.giacenza||0)-n)*10000)/10000;db.movimentiMagazzino.push({id:'mv_'+Date.now()+Math.random(),prodottoId:p.id,data:localDay(new Date()),prodotto:p.nome,tipo:'Utilizzo',quantita:-n,unita:base});if(p.giacenza<0)alert('Attenzione: giacenza negativa per '+p.nome+'. Verifica le quantità.');}
+function prodotti(a){a.innerHTML=`<h2>📦 Archivio prodotti e magazzino</h2><p class="muted">Archivio personale offline. Le schede importate dal catalogo sono documenti di riferimento: controlla sempre etichetta, autorizzazione, dosi e scadenze aggiornate prima dell’uso.</p>
+<div class="card"><h3>Nuovo prodotto / scheda catalogo</h3><div class="form"><select id="pTipo"><option value="concimi">Concime</option><option value="trattamenti">Trattamento</option><option value="trappole">Trappola</option><option value="attrattivi">Attrattivo / ricambio</option></select><input id="pNome" placeholder="Nome commerciale"><input id="pMarca" placeholder="Produttore"><input id="pComposizione" placeholder="NPK o principio attivo"><input id="pImpiego" placeholder="Impiego / avversità"><input id="pDose" type="number" min="0" step="any" placeholder="Dose etichetta (numero)"><select id="pDoseUnita"><option value="">Unità dose</option><option>ml/L</option><option>g/L</option><option>ml/10 L</option><option>g/10 L</option><option>g</option><option>ml</option></select><input id="pCarenza" type="number" min="0" step="1" placeholder="Carenza (giorni), se applicabile"><input id="pFonte" placeholder="Fonte verificabile (URL etichetta/scheda)"><input id="pVerifica" type="date" title="Data di consultazione etichetta"><select id="pUnita"><option>g</option><option>kg</option><option>ml</option><option>L</option><option>pz</option></select><input id="pStock" type="number" min="0" step="any" placeholder="Giacenza iniziale"><input id="pNote" placeholder="Note"><input id="pLotto" placeholder="Numero lotto"><label>Scadenza prodotto<input id="pScadenza" type="date"></label><label>Scorta minima (stessa unità giacenza)<input id="pMinimo" type="number" min="0" step="any" value="0"></label><input id="pFornitore" placeholder="Fornitore"><label>Costo acquisto (€)<input id="pCosto" type="number" min="0" step="0.01"></label><button onclick="aggiungiProdotto()">Salva prodotto</button></div></div>
+<div class="card" style="margin-top:15px"><h3>Catalogo di riferimento — importa schede</h3><p class="muted">Importa un file JSON con un elenco di schede e relativi riferimenti. Nessuna scheda è preapprovata o verificata automaticamente. Le schede senza fonte restano contrassegnate come non verificate.</p><input id="catalogFile" type="file" accept=".json,application/json"><button onclick="importaCatalogo()">Importa schede JSON</button><button class="secondary" onclick="esportaCatalogo()">Esporta catalogo JSON</button></div>
+<div class="card" style="margin-top:15px"><h3>⚠️ Avvisi magazzino</h3>${avvisiMagazzino().map(x=>`<p>⚠️ <b>${esc(x.nome)}</b> — ${esc(x.motivo)}</p>`).join('<p class="muted">Nessuna scadenza superata o scorta sotto soglia.</p>')}<button class="secondary" onclick="esportaMagazzinoCSV()">Esporta magazzino CSV</button></div><div class="card" style="margin-top:15px;overflow-x:auto"><h3>Prodotti disponibili</h3><table><tr><th>Tipo</th><th>Prodotto</th><th>Composizione</th><th>Giacenza</th><th>Minimo</th><th>Lotto / Scadenza</th><th>Riferimento</th><th>Azioni</th></tr>${db.prodotti.map((p,i)=>`<tr><td>${p.tipo==='concimi'?'Concime':p.tipo==='trappole'?'Trappola':p.tipo==='attrattivi'?'Attrattivo':'Trattamento'}</td><td><b>${esc(p.nome)}</b><div class="muted">${esc(p.produttore)} · ${esc(p.note||'')}</div></td><td>${esc(p.composizione||'—')}</td><td>${esc(p.giacenza||0)} ${esc(p.unita||'')}</td><td>${esc(p.minimo||0)} ${esc(p.unita||"")}</td><td>${esc(p.lotto||"—")}<div class="muted">${esc(p.scadenza||"Scadenza non indicata")}</div></td><td>${p.fonte?`<span class="tag">Fonte indicata</span><div class="muted">${esc(p.fonte)}</div>`:'<span class="muted">Fonte mancante</span>'}<div class="muted">${esc(p.verifica||'')}</div></td><td><button class="secondary" onclick="modificaProdotto(${i})">✏️ Modifica</button> <button class="secondary" onclick="movimento(${i})">± Scorta</button> <button class="danger" onclick="eliminaProdotto(${i})">Elimina</button></td></tr>`).join('')}</table></div>
+<div class="card" style="margin-top:15px"><h3>Ultimi 50 movimenti — correggi o annulla</h3><p class="muted">Correzione e annullamento ricalcolano la giacenza. I movimenti storici senza prodotto identificabile non possono essere modificati automaticamente.</p>${db.movimentiMagazzino.map((x,i)=>({...x,indice:i})).slice(-50).reverse().map(x=>`<p>${esc(x.data)} — ${esc(x.prodotto)}: ${x.quantita>0?'+':''}${esc(x.quantita)} ${esc(x.unita)} (${esc(x.tipo)}) <button class="secondary" onclick="correggiMovimento(${x.indice})">Correggi</button> <button class="danger" onclick="annullaMovimento(${x.indice})">Annulla</button></p>`).join('')||'<p class="muted">Nessun movimento.</p>'}</div>`}
+function aggiungiProdotto(){let nome=pNome.value.trim();if(!nome)return alert('Inserisci il nome del prodotto');let stock=pStock.value===''?0:Number(pStock.value);if(!Number.isFinite(stock)||stock<0)return alert('Giacenza non valida');db.prodotti.push({id:'pr_'+Date.now()+Math.random(),tipo:pTipo.value,nome,produttore:pMarca.value,composizione:pComposizione.value,impiego:pImpiego.value,dose:pDose.value,doseUnita:pDoseUnita.value,carenza:pCarenza.value,fonte:pFonte.value,verifica:pVerifica.value,unita:pUnita.value,giacenza:stock,note:pNote.value,lotto:pLotto.value,scadenza:pScadenza.value,minimo:Number(pMinimo.value)||0,fornitore:pFornitore.value,costo:Number(pCosto.value)||0});save()}
+function movimento(i){let p=db.prodotti[i];if(!p)return;let s=prompt('Variazione scorta per '+p.nome+' in '+p.unita+' (es. 500 o -50):');if(s===null)return;let n=Number(s.replace(',','.'));if(!s.trim()||!Number.isFinite(n)||n===0)return alert('Inserisci una quantità valida');if(Number(p.giacenza||0)+n<0&&!confirm('La giacenza diventerà negativa. Continuare?'))return;p.giacenza=Math.round((Number(p.giacenza||0)+n)*10000)/10000;db.movimentiMagazzino.push({id:'mv_'+Date.now()+Math.random(),prodottoId:p.id,data:localDay(new Date()),prodotto:p.nome,tipo:'Rettifica manuale',quantita:n,unita:p.unita});save()}
+function eliminaProdotto(i){if(db.trappole.some(t=>t.prodottoId===db.prodotti[i]?.id))return alert('Prodotto collegato a trappole.');if(db.movimentiMagazzino.some(m=>m.prodottoId===db.prodotti[i]?.id))return alert('Questo prodotto ha movimenti registrati. Annulla prima i movimenti oppure mantieni il prodotto per conservare lo storico.');if(confirm('Eliminare il prodotto dall’archivio? Lo storico interventi resterà invariato.')){db.prodotti.splice(i,1);save()}}
+async function importaCatalogo(){let f=document.getElementById('catalogFile').files[0];if(!f)return alert('Scegli un JSON');try{let raw=JSON.parse(await f.text()),arr=Array.isArray(raw)?raw:raw.prodotti;if(!Array.isArray(arr)||arr.length>1000)throw Error('Formato non valido o troppe schede');let valid=arr.filter(x=>x&&typeof x.nome==='string'&&x.nome.trim()&&['concimi','trattamenti','trappole','attrattivi'].includes(x.tipo));if(!valid.length)throw Error('Nessuna scheda valida');if(!confirm('Importare '+valid.length+' schede? Controlla le fonti e i dosaggi prima di usarle.'))return;for(let x of valid){if(db.prodotti.some(p=>p.tipo===x.tipo&&p.nome.toLowerCase()===x.nome.toLowerCase()))continue;db.prodotti.push({id:'pr_'+Date.now()+Math.random(),tipo:x.tipo,nome:String(x.nome).slice(0,150),produttore:String(x.produttore||'').slice(0,150),composizione:String(x.composizione||'').slice(0,250),impiego:String(x.impiego||'').slice(0,250),dose:'',doseUnita:'',carenza:'',fonte:String(x.fonte||'').slice(0,500),verifica:String(x.verifica||'').slice(0,30),unita:['g','kg','ml','L','pz'].includes(x.unita)?x.unita:'g',giacenza:0,lotto:'',scadenza:'',minimo:0,fornitore:'',costo:0,note:'Importato da catalogo: verificare etichetta e autorizzazioni'});}save();alert('Importazione completata. Dosi non importate automaticamente per sicurezza.')}catch(e){alert('Importazione non riuscita: '+e.message)}}
+function esportaCatalogo(){let blob=new Blob([JSON.stringify({prodotti:db.prodotti},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='catalogo-prodotti-orto.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+
+function selectColture(id){return `<select id="${id}"><option value="">Seleziona coltura</option>${db.colture.map(c=>`<option value="${esc(c.nome)}">${esc(c.nome)}${c.var?' — '+esc(c.var):''}</option>`).join('')}</select>`}
+
+function irrigazioni(a){
+ const today=localDay(new Date());
+ const selected=window.filtroIrrigazione||'';
+ const names=[...new Set([...catalogoPiante().map(p=>p.nome),...db.irrigazioni.map(x=>x.coltura)].filter(Boolean))].sort((x,y)=>x.localeCompare(y,'it'));
+ const opts=names.map(n=>`<option value="${esc(n)}" ${selected===n?'selected':''}>${esc(n)}</option>`).join('');
+ const rows=db.irrigazioni.map((x,i)=>({...x,i})).filter(x=>!selected||x.coltura===selected).sort((x,y)=>String(y.data).localeCompare(String(x.data)));
+ const total=rows.reduce((n,x)=>n+(Number(x.litri)||0),0);
+ const month=today.slice(0,7),monthLitri=rows.filter(x=>String(x.data).startsWith(month)).reduce((n,x)=>n+(Number(x.litri)||0),0);
+ const last=rows.length?rows[0]:null;
+ const byMonth={};rows.forEach(x=>{let m=String(x.data).slice(0,7);if(/^\d{4}-\d{2}$/.test(m))byMonth[m]=(byMonth[m]||0)+(Number(x.litri)||0)});
+ const months=Object.keys(byMonth).sort().reverse().slice(0,12);
+ const plans=db.pianiIrrigazione||[];
+ a.innerHTML=`<h2>💧 Irrigazioni avanzate</h2>
+ <div class="card"><h3>Registra un'irrigazione</h3><div class="form">
+ <label>Pianta o coltura<select id="i1"><option value="">Seleziona</option>${names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select></label>
+ <label>Data<input id="i2" type="date" value="${today}"></label>
+ <label>Litri d'acqua<input id="i3" type="number" min="0.1" step="0.1" placeholder="Es. 15"></label>
+ <label>Metodo<select id="iMetodo"><option>Annaffiatoio</option><option>Goccia a goccia</option><option>Tubo</option><option>Sprinkler</option><option>Altro</option></select></label>
+ <label>Note<input id="i4" placeholder="Es. terreno asciutto"></label>
+ </div><button onclick="addIrr()">💾 Registra irrigazione</button></div>
+ <div class="card" style="margin-top:15px"><h3>Riepilogo e filtri</h3><div class="form"><label>Filtra per pianta/coltura<select id="filtroIrr" onchange="window.filtroIrrigazione=this.value;render()"><option value="">Tutte</option>${opts}</select></label></div>
+ <div class="grid"><div><span class="muted">Litri registrati</span><div class="stat">${total.toFixed(1)} L</div></div><div><span class="muted">Questo mese</span><div class="stat">${monthLitri.toFixed(1)} L</div></div><div><span class="muted">Irrigazioni</span><div class="stat">${rows.length}</div></div><div><span class="muted">Ultima irrigazione</span><div class="stat" style="font-size:19px">${last?esc(last.data):'—'}</div></div></div></div>
+ <div class="card" style="margin-top:15px"><h3>🔔 Programma irrigazioni</h3><p class="muted">Imposta un intervallo indicativo e la data di partenza. I promemoria appaiono nel gestionale, non sono consigli automatici: controlla sempre umidità del terreno e pioggia.</p>
+ <div class="form"><label>Pianta/coltura<select id="ipColtura"><option value="">Seleziona</option>${names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')}</select></label>
+ <label>Ripeti ogni (giorni)<input id="ipGiorni" type="number" min="1" max="365" value="7"></label>
+ <label>Prima scadenza<input id="ipData" type="date" value="${today}"></label>
+ <label>Litri previsti (facoltativi)<input id="ipLitri" type="number" min="0" step="0.1"></label></div>
+ <button onclick="salvaPianoIrrigazione()">Aggiungi promemoria</button>
+ <div class="scroll"><table><tr><th>Pianta</th><th>Intervallo</th><th>Prossima data</th><th>Litri indicativi</th><th></th></tr>${plans.map((x,i)=>`<tr><td>${esc(x.coltura)}</td><td>${esc(x.giorni)} giorni</td><td>${esc(x.prossima)}</td><td>${x.litri?esc(x.litri)+' L':'—'}</td><td><button class="secondary" onclick="completaPianoIrrigazione(${i})">✓ Eseguita oggi</button> <button class="danger" onclick="eliminaPianoIrrigazione(${i})">Elimina</button></td></tr>`).join('')}</table></div></div>
+ <div class="card" style="margin-top:15px"><h3>📊 Consumi mensili ${selected?'· '+esc(selected):''}</h3>${months.map(m=>`<p><b>${esc(m)}</b> — ${byMonth[m].toFixed(1)} L</p><div class="bar"><span style="width:${Math.max(2,100*byMonth[m]/Math.max(...Object.values(byMonth),1))}%"></span></div>`).join('')||'<p class="muted">Nessun dato.</p>'}</div>
+ <div class="card" style="margin-top:15px"><h3>Storico irrigazioni</h3><div class="scroll"><table><tr><th>Data</th><th>Coltura</th><th>Litri</th><th>Metodo</th><th>Note</th><th></th></tr>${rows.map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.coltura)}</td><td>${esc(x.litri)}</td><td>${esc(x.metodo||'—')}</td><td>${esc(x.note)}</td><td><button class="secondary" onclick="modificaIrrigazione(${x.i})">Modifica</button> <button class="danger" onclick="del('irrigazioni',${x.i})">Elimina</button></td></tr>`).join('')}</table></div></div>`;
+}
+function addIrr(){
+ const coltura=document.getElementById('i1').value,data=document.getElementById('i2').value,litri=Number(document.getElementById('i3').value);
+ if(!coltura||!data||!Number.isFinite(litri)||litri<=0)return alert('Seleziona pianta, data e litri validi');
+ db.irrigazioni.push({coltura,data,litri,metodo:document.getElementById('iMetodo').value,note:document.getElementById('i4').value});
+ save();
+}
+function modificaIrrigazione(i){
+ const x=db.irrigazioni[i];if(!x)return;
+ const d=prompt('Data (AAAA-MM-GG)',x.data);if(d===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||isNaN(new Date(d+'T12:00:00')))return alert('Data non valida');
+ const v=prompt('Litri',x.litri);if(v===null)return;
+ const litri=Number(v);if(!Number.isFinite(litri)||litri<=0)return alert('Litri non validi');
+ const note=prompt('Note',x.note||'');if(note===null)return;
+ x.data=d;x.litri=litri;x.note=note;save();
+}
+function salvaPianoIrrigazione(){
+ const coltura=document.getElementById('ipColtura').value,giorni=Number(document.getElementById('ipGiorni').value),prossima=document.getElementById('ipData').value,litri=Number(document.getElementById('ipLitri').value||0);
+ if(!coltura||!prossima||!Number.isInteger(giorni)||giorni<1||giorni>365||!Number.isFinite(litri)||litri<0)return alert('Controlla coltura, giorni, data e litri');
+ db.pianiIrrigazione.push({coltura,giorni,prossima,litri});save();
+}
+function completaPianoIrrigazione(i){
+ let x=db.pianiIrrigazione[i];if(!x)return;
+ const today=localDay(new Date());
+ if(x.litri>0 && confirm('Registrare anche '+x.litri+' L di acqua per '+x.coltura+' oggi?'))db.irrigazioni.push({coltura:x.coltura,data:today,litri:x.litri,metodo:'Da promemoria',note:'Irrigazione da piano'});
+ x.prossima=addDays(today,x.giorni);save();
+}
+function eliminaPianoIrrigazione(i){if(confirm('Eliminare questo promemoria?')){db.pianiIrrigazione.splice(i,1);save()}}
+function concimazioni(a){a.innerHTML=`<h2>🌾 Registro concimazioni</h2><div class="card"><div class="form">${selectColture('f1')}<input id="f2" type="date"><select id="fCatalog" onchange="selezionaProdotto('concimi')"><option value="">Scegli dall’archivio (facoltativo)</option>${opzioniProdotti("concimi")}</select><input id="f3" placeholder="Nome prodotto"><input id="f4" type="number" min="0" step="0.1" placeholder="Quantità"><select id="f5"><option>g</option><option>kg</option><option>ml</option><option>L</option></select><label>Quando rifare la concimazione?<input id="f7" type="date" title="Prossima concimazione"></label><input id="f6" placeholder="Note"><button onclick="addConc()">Registra concimazione</button></div></div><div class="card" style="margin-top:15px"><table><tr><th>Data</th><th>Coltura</th><th>Prodotto</th><th>Quantità</th><th>Da rifare il</th><th>Note</th><th></th></tr>${db.concimazioni.map((x,i)=>`<tr><td>${esc(x.data)}</td><td>${esc(x.coltura)}</td><td>${esc(x.prodotto)}</td><td>${esc(x.q)} ${esc(x.unita)}</td><td>${esc(x.prossimo||"—")}</td><td>${esc(x.note)}</td><td><button class="secondary" onclick="ripetiIntervento('concimazioni',${i})">↻ Ripeti</button> <button class="danger" onclick="del('concimazioni',${i})">Elimina</button></td></tr>`).join('')}</table></div>`}
+function addConc(){if(!f1.value||!f2.value||!f3.value.trim()||!f4.value||Number(f4.value)<=0)return alert('Compila coltura, data, prodotto e quantità');if(window.ripetizione?.tipo==='concimazioni' && db.concimazioni[window.ripetizione.indice])db.concimazioni[window.ripetizione.indice].prossimo='';window.ripetizione=null;scaricaDaMagazzino("concimi",fCatalog.value,f4.value,f5.value);db.concimazioni.push({coltura:f1.value,data:f2.value,prodotto:f3.value,q:Number(f4.value),unita:f5.value,note:f6.value,prossimo:f7.value});save()}
+function ripetiIntervento(tipo,i){
+ const x=db[tipo]?.[i];if(!x)return alert('Intervento non trovato');
+ page=tipo;render();window.ripetizione={tipo,indice:i};
+ const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??''};
+ const today=localDay(new Date());
+ if(tipo==='trattamenti'){
+  set('xCatalog','');set('x1',x.coltura);set('x2',x.problema);set('x3',x.prodotto);set('x4',x.dose);set('x5',x.unita);set('x6',x.acqua);set('x7',today);set('x8',x.carenza);set('x9','');set('x10',x.note);
+ }else{
+  set('fCatalog','');set('f1',x.coltura);set('f2',today);set('f3',x.prodotto);set('f4',x.q);set('f5',x.unita);set('f7','');set('f6',x.note);
+  if(document.getElementById('f1').value!==x.coltura){let o=document.createElement('option');o.value=x.coltura;o.textContent=x.coltura;document.getElementById('f1').appendChild(o);set('f1',x.coltura)}
+ }
+ const first=document.getElementById(tipo==='trattamenti'?'x1':'f1');first?.scrollIntoView({behavior:'smooth',block:'center'});
+ alert('Campi compilati con i dati precedenti. Controlla dosi e indicazioni del prodotto, scegli la prossima data e premi Salva per registrare il nuovo intervento.');
+}
+function schede(a){a.innerHTML=`<h2>📷 Schede delle colture</h2><div class="card"><h3>📒 Schede complete V7.0</h3><div class="grid">${catalogoPiante().map(p=>`<button type="button" class="secondary" onclick="apriScheda('${p.id}')">${p.kind==='albero'?'🌳':'🌿'} ${esc(p.nome)} ${esc(p.varieta)} → Apri scheda</button>`).join('')||'<p>Registra una coltura o un albero per iniziare.</p>'}</div></div><div style="height:15px"></div>${db.colture.map((c,i)=>{let photos=db.foto.map((f,j)=>({...f,j})).filter(f=>f.indice===i);let events=[...db.irrigazioni.map(x=>({...x,tipo:'Irrigazione',dettaglio:x.litri+' L'})),...db.concimazioni.map(x=>({...x,tipo:'Concimazione',dettaglio:x.prodotto+' '+x.q+' '+x.unita})),...db.trattamenti.map(x=>({...x,tipo:'Trattamento',dettaglio:x.prodotto+' '+(x.dose||'')}))].filter(x=>x.coltura===c.nome).sort((a,b)=>b.data.localeCompare(a.data));return `<div class="card" style="margin-bottom:15px"><h3>${esc(c.nome)} ${esc(c.var||'')}</h3><p class="muted">Semina/trapianto: ${esc(c.data||'—')} · Posizione: ${esc(c.pos||'—')}</p><label>Note sulla coltura</label><textarea id="nota${i}" placeholder="Osservazioni, stato della pianta...">${esc(c.note||'')}</textarea><button onclick="salvaNota(${i})">Salva note</button><p><b>Aggiungi foto</b> (JPG o PNG, max 5 MB)</p><input id="foto${i}" type="file" accept="image/jpeg,image/png,image/webp"><button class="secondary" onclick="aggiungiFoto(${i})">Carica foto</button><div class="grid" style="margin-top:12px">${photos.map(f=>`<div><img alt="Foto coltura" src="${f.src}" style="max-width:100%;height:150px;object-fit:cover;border-radius:10px"><p class="muted">${esc(f.data)}</p><button class="danger" onclick="del('foto',${f.j})">Elimina foto</button></div>`).join('')}</div><h3 style="margin-top:14px">Storico interventi</h3>${events.map(e=>`<p>${esc(e.data)} — <b>${esc(e.tipo)}</b>: ${esc(e.dettaglio)}</p>`).join('')||'<p class="muted">Nessun intervento registrato.</p>'}</div>`}).join('')||'<div class="card">Aggiungi prima una coltura dalla sezione Colture.</div>'}`}
+function salvaNota(i){db.colture[i].note=document.getElementById('nota'+i).value;save()}
+async function aggiungiFoto(i){let f=document.getElementById('foto'+i).files[0];if(!f)return alert('Scegli una foto');if(f.size>5*1024*1024)return alert('Foto troppo grande (max 5 MB)');try{let img=new Image(),url=URL.createObjectURL(f);await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});let scale=Math.min(1,1000/img.width,1000/img.height),canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);let src=canvas.toDataURL('image/jpeg',0.68);db.foto.push({indice:i,data:new Date().toISOString().slice(0,10),src});try{save()}catch(e){db.foto.pop();alert('Spazio browser esaurito. Esporta un backup e usa meno foto.')}}catch(e){alert('Impossibile leggere la foto')}}
+
+
+function localDay(d){let x=new Date(d.getFullYear(),d.getMonth(),d.getDate());return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+let calMonth=new Date();
+
+const FAMIGLIE=['Solanacee','Cucurbitacee','Brassicacee','Fabacee','Apiacee','Asteracee','Amarillidacee','Chenopodiacee/Amarantacee','Poacee','Altro/Non noto'];
+function semine(a){
+ const plants=[...new Set(db.colture.map(x=>x.nome).filter(Boolean))];
+ const entries=db.semine.map((x,i)=>({...x,i})).sort((x,y)=>String(y.data).localeCompare(String(x.data)));
+ a.innerHTML=`<h2>🌱 Semine e trapianti</h2><p class="muted">Registra attività programmate o già eseguite. Le date sono scelte da te: non sono previsioni agronomiche automatiche.</p>
+ <div class="card"><h3>Nuova semina o trapianto</h3><div class="form">
+ <label>Operazione<select id="seTipo"><option>Semina</option><option>Trapianto</option></select></label>
+ <label>Coltura<input id="seColtura" list="seColture" placeholder="Es. Pomodoro"><datalist id="seColture">${plants.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></label>
+ <label>Varietà<input id="seVarieta" placeholder="Facoltativa"></label>
+ <label>Data<input type="date" id="seData" value="${localDay(new Date())}"></label>
+ <label>Zona / aiuola<input id="seZona" placeholder="Es. Aiuola 1"></label>
+ <label>Numero piante o semi<input id="seQuantita" type="number" min="0" step="1"></label>
+ <label>Sementi dal magazzino<select id="seSemente"><option value="">Nessuno scarico</option>${(db.sementi||[]).map(x=>`<option value="${esc(x.id)}">${esc(x.coltura)} · ${esc(x.varieta)} (${esc(x.quantita)} ${esc(x.unita)})</option>`).join('')}</select></label>
+ <label>Quantità sementi utilizzate<input id="seConsumo" type="number" min="0" step="any" placeholder="Solo se eseguita"></label>
+ <label>Stato<select id="seStato"><option>Programmato</option><option>Eseguito</option></select></label>
+ <label>Note<input id="seNote" placeholder="Es. semenzaio"></label>
+ </div><button onclick="aggiungiSemina()">Salva operazione</button></div>
+ <div class="card" style="margin-top:15px"><h3>Calendario semine e trapianti</h3><div class="scroll"><table><tr><th>Data</th><th>Operazione</th><th>Coltura</th><th>Varietà</th><th>Zona</th><th>Quantità</th><th>Stato</th><th>Azioni</th></tr>
+ ${entries.map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.tipo)}</td><td>${esc(x.coltura)}</td><td>${esc(x.varieta)}</td><td>${esc(x.zona)}</td><td>${esc(x.quantita||'—')}</td><td>${esc(x.stato)}</td><td><button class="secondary" onclick="cambiaStatoSemina(${x.i})">${x.stato==='Programmato'?'✓ Eseguita':'↩ Programma'}</button> <button class="secondary" onclick="modificaSemina(${x.i})">Modifica</button> <button class="danger" onclick="eliminaSemina(${x.i})">Elimina</button></td></tr>`).join('')}</table></div></div>`;
+}
+function aggiungiSemina(){
+ const coltura=document.getElementById('seColtura').value.trim(),data=document.getElementById('seData').value;
+ if(!coltura||!data)return alert('Inserisci coltura e data.');
+ const quantita=document.getElementById('seQuantita').value;
+ if(quantita!==''&&(!Number.isInteger(Number(quantita))||Number(quantita)<0))return alert('Quantità non valida.');
+ const semeId=seSemente.value,consumo=seConsumo.value===''?0:Number(seConsumo.value);
+ if(!Number.isFinite(consumo)||consumo<0)return alert('Quantità di sementi non valida.');
+ if(consumo>0&&(!semeId||seTipo.value!=='Semina'))return alert('Per scaricare sementi scegli una semente e l’operazione Semina.');
+ if(consumo>0&&seStato.value!=='Eseguito')return alert('Lo scarico è possibile soltanto per semine eseguite.');
+ const seme=db.sementi.find(x=>x.id===semeId);
+ if(consumo>0&&(!seme||Number(seme.quantita)<consumo))return alert('Sementi insufficienti in magazzino.');
+ const id='sem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+ if(consumo>0){seme.quantita=Number((Number(seme.quantita)-consumo).toFixed(5));db.movimentiSementi.push({id:'ms_'+Date.now(),sementeId:semeId,seminaId:id,data,quantita:-consumo,unita:seme.unita,tipo:'Semina eseguita'});}
+ db.semine.push({id,tipo:seTipo.value,coltura,varieta:seVarieta.value.trim(),data,zona:seZona.value.trim(),quantita:quantita===''?'':Number(quantita),stato:seStato.value,note:seNote.value.trim(),sementeId:semeId,consumoSementi:consumo,scaricoEffettuato:consumo>0});save();
+}
+function cambiaStatoSemina(i){const x=db.semine[i];if(!x)return;x.stato=x.stato==='Programmato'?'Eseguito':'Programmato';save()}
+function modificaSemina(i){
+ const x=db.semine[i];if(!x)return;
+ let d=prompt('Data (AAAA-MM-GG)',x.data);if(d===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return alert('Data non valida');
+ let z=prompt('Zona / aiuola',x.zona||'');if(z===null)return;
+ let n=prompt('Note',x.note||'');if(n===null)return;
+ x.data=d;x.zona=z.trim();x.note=n;save();
+}
+function eliminaSemina(i){
+ const x=db.semine[i];
+ if(!x)return;
+ if(!confirm('Eliminare questa semina/trapianto?'+(x.scaricoEffettuato?' I semi scaricati verranno restituiti al magazzino.':'')))return;
+ // Restituisci esclusivamente uno scarico documentato, non le semine storiche.
+ const q=Number(x.consumoSementi||0);
+ if(x.scaricoEffettuato&&q>0){
+  const seed=db.sementi.find(s=>s.id===x.sementeId);
+  if(!seed){alert('La semente associata non è più in magazzino. La semina non è stata eliminata: ripristina prima la semente oppure contatta il supporto.');return;}
+  // Una sola operazione: aggiornamento scorta, movimento e cancellazione, poi save().
+  seed.quantita=Number((Number(seed.quantita)+q).toFixed(5));
+  db.movimentiSementi.push({id:'ms_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),sementeId:seed.id,seminaId:x.id,data:localDay(new Date()),quantita:q,unita:seed.unita,tipo:'Ripristino per semina eliminata'});
+ }
+ db.semine.splice(i,1);
+ save();
+}
+function rotazioni(a){
+ const records=db.rotazioni.map((x,i)=>({...x,i})).sort((x,y)=>Number(y.anno)-Number(x.anno));
+ const zones=[...new Set(records.map(x=>x.zona))].sort((a,b)=>a.localeCompare(b,'it'));
+ const warning=[];
+ for(const zona of zones){
+  const list=records.filter(x=>x.zona===zona);
+  for(const r of list){
+   if(!r.famiglia||r.famiglia==='Altro/Non noto')continue;
+   const prev=list.filter(p=>p.anno===r.anno-1&&p.famiglia===r.famiglia);
+   if(prev.length)warning.push(`${zona}: ${r.famiglia} presente sia nel ${r.anno-1} sia nel ${r.anno}`);
+  }
+ }
+ a.innerHTML=`<h2>🔄 Rotazioni delle colture</h2><p class="muted">Registra cosa coltivi in ciascuna aiuola, anno per anno. L'avviso di ripetizione della stessa famiglia è informativo, non una diagnosi o una regola assoluta.</p>
+ <div class="card"><h3>Registra occupazione aiuola</h3><div class="form">
+ <label>Zona / aiuola<input id="roZona" placeholder="Es. Aiuola 1"></label>
+ <label>Anno<input id="roAnno" type="number" min="2000" max="2100" value="${new Date().getFullYear()}"></label>
+ <label>Coltura<input id="roColtura" placeholder="Es. Pomodoro"></label>
+ <label>Famiglia botanica<select id="roFamiglia">${FAMIGLIE.map(f=>`<option>${esc(f)}</option>`).join('')}</select></label>
+ <label>Stagione<select id="roStagione"><option>Primavera</option><option>Estate</option><option>Autunno</option><option>Inverno</option><option>Intero anno</option></select></label>
+ <label>Note<input id="roNote" placeholder="Facoltative"></label>
+ </div><button onclick="aggiungiRotazione()">Aggiungi alla rotazione</button></div>
+ <div class="card" style="margin-top:15px"><h3>⚠️ Controllo ripetizioni</h3>${warning.map(w=>`<p>⚠️ ${esc(w)}</p>`).join('')||'<p class="muted">Nessuna ripetizione consecutiva rilevata nei dati inseriti.</p>'}</div>
+ <div class="card" style="margin-top:15px"><h3>Storico aiuole</h3><div class="scroll"><table><tr><th>Anno</th><th>Zona</th><th>Stagione</th><th>Coltura</th><th>Famiglia</th><th>Note</th><th></th></tr>
+ ${records.map(x=>`<tr><td>${esc(x.anno)}</td><td>${esc(x.zona)}</td><td>${esc(x.stagione)}</td><td>${esc(x.coltura)}</td><td>${esc(x.famiglia)}</td><td>${esc(x.note)}</td><td><button class="danger" onclick="eliminaRotazione(${x.i})">Elimina</button></td></tr>`).join('')}</table></div></div>`;
+}
+function aggiungiRotazione(){
+ const zona=roZona.value.trim(),coltura=roColtura.value.trim(),anno=Number(roAnno.value);
+ if(!zona||!coltura||!Number.isInteger(anno)||anno<2000||anno>2100)return alert('Inserisci zona, coltura e anno valido.');
+ db.rotazioni.push({zona,coltura,anno,famiglia:roFamiglia.value,stagione:roStagione.value,note:roNote.value.trim()});save();
+}
+function eliminaRotazione(i){if(confirm('Eliminare questa registrazione?')){db.rotazioni.splice(i,1);save()}}
+
+function calendario(a){let y=calMonth.getFullYear(),m=calMonth.getMonth(),first=new Date(y,m,1),start=(first.getDay()+6)%7,days=new Date(y,m+1,0).getDate(),labels=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];let entries=[...db.trappole.flatMap(x=>[{data:x.prossimo,t:'🪤 Controllo trappola · '+x.nome},{data:x.scadenza,t:'🪤 Sostituzione attrattivo · '+x.nome}].filter(e=>e.data&&x.stato==='Attiva')),...db.lavoriAnnuali.filter(x=>x.data).map(x=>({data:x.data,t:'📆 '+x.lavoro+' · '+(x.pianta||'Orto')})),...db.eventiFrutteto.filter(x=>x.data).map(x=>({data:x.data,t:'🌳 '+x.tipo+' · '+(piantaById(x.plantId)?.nome||'Albero')})),...db.semine.filter(x=>x.data).map(x=>({data:x.data,t:(x.tipo||'Semina')+' · '+x.coltura+' · '+(x.zona||'')})),...db.attivita.map(x=>({data:x.data,t:x.tipo+' · '+x.coltura})),...db.trattamenti.map(x=>({data:x.data,t:'Trattamento · '+x.coltura})),...db.raccolti.map(x=>({data:x.data,t:'Raccolta · '+x.coltura})),...db.irrigazioni.map(x=>({data:x.data,t:'Irrigazione · '+x.coltura})),...db.concimazioni.map(x=>({data:x.data,t:'Concimazione · '+x.coltura})),...db.concimazioni.filter(x=>x.prossimo).map(x=>({data:x.prossimo,t:'🌾 Rifare concimazione · '+x.coltura})),...db.trattamenti.filter(x=>x.prossimo).map(x=>({data:x.prossimo,t:'🧴 Rifare trattamento · '+x.coltura}))];let cells=labels.map(l=>`<div class="day head">${l}</div>`).join('');for(let i=0;i<start;i++)cells+='<div class="day blank"></div>';for(let d=1;d<=days;d++){let date=localDay(new Date(y,m,d)),events=entries.filter(x=>x.data===date);cells+=`<div class="day"><b>${d}</b>${events.map(x=>`<div class="event" title="${esc(x.t)}">${esc(x.t)}</div>`).join('')}</div>`}a.innerHTML=`<h2>🗓️ Calendario interventi</h2><div class="card"><div class="rowbuttons"><button onclick="shiftMonth(-1)">← Precedente</button><h3>${first.toLocaleDateString('it-IT',{month:'long',year:'numeric'})}</h3><button onclick="shiftMonth(1)">Successivo →</button></div><div class="calendar">${cells}</div><p class="muted">Le attività si aggiungono dalla sezione Attività; gli interventi registrati appaiono automaticamente.</p></div>`}
+function shiftMonth(n){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+n,1);render()}
+
+let annoEconomia=new Date().getFullYear();
+function euro(v){return Number(v||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'})}
+
+let annoPiano=new Date().getFullYear();
+const MESI_IT=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+function pianoAnnuale(a){
+ const records=db.lavoriAnnuali.map((x,i)=>({...x,i})).filter(x=>Number(String(x.data).slice(0,4))===annoPiano).sort((x,y)=>x.data.localeCompare(y.data));
+ const completed=records.filter(x=>x.stato==='Eseguito').length;
+ a.innerHTML=`<h2>📆 Piano annuale dei lavori</h2><div class="card"><div class="rowbuttons"><button class="secondary" onclick="annoPiano--;render()">← Anno precedente</button><h3>${annoPiano}</h3><button class="secondary" onclick="annoPiano++;render()">Anno successivo →</button></div><p>${records.length} lavori · ${completed} completati · ${records.length-completed} programmati</p><p class="muted">Il piano contiene solo i lavori aggiunti qui; quelli registrati in altre sezioni restano nel loro storico e nel calendario generale.</p></div>
+ <div class="card" style="margin-top:15px"><h3>Programma un lavoro</h3><div class="form">
+ <label>Data<input id="paData" type="date" value="${annoPiano===new Date().getFullYear()?localDay(new Date()):annoPiano+'-01-15'}"></label>
+ <label>Lavoro<select id="paLavoro">${['Potatura','Semina','Trapianto','Irrigazione','Concimazione','Raccolta','Controllo sanitario','Preparazione terreno','Altro'].map(t=>`<option>${t}</option>`).join('')}</select></label>
+ <label>Pianta / zona<input id="paPianta" placeholder="Es. pompelmo, aiuola 1"></label>
+ <label>Stato<select id="paStato"><option>Programmato</option><option>Eseguito</option></select></label>
+ <label>Note<input id="paNote" placeholder="Indicazioni e osservazioni"></label>
+ </div><button onclick="aggiungiLavoroAnnuale()">Salva lavoro</button></div>
+ <div class="grid" style="margin-top:15px">${MESI_IT.map((mese,m)=>{const list=records.filter(x=>Number(x.data.slice(5,7))===m+1);return `<div class="card"><h3>${mese}</h3>${list.length?list.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #ddd"><b>${esc(x.data.slice(8,10))} · ${esc(x.lavoro)}</b><p>${esc(x.pianta||'Orto')} · ${esc(x.stato)}</p>${x.note?`<p class="muted">${esc(x.note)}</p>`:''}<button class="secondary" onclick="toggleLavoroAnnuale(${x.i})">${x.stato==='Programmato'?'✓ Completato':'↩ Da fare'}</button> <button class="secondary" onclick="modificaLavoroAnnuale(${x.i})">Modifica</button> <button class="danger" onclick="eliminaLavoroAnnuale(${x.i})">Elimina</button></div>`).join(''):'<p class="muted">Nessun lavoro programmato</p>'}</div>`}).join('')}</div>`;
+}
+function aggiungiLavoroAnnuale(){
+ const data=paData.value;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(data))return alert('Inserisci una data valida.');
+ db.lavoriAnnuali.push({data,lavoro:paLavoro.value,pianta:paPianta.value.trim(),stato:paStato.value,note:paNote.value.trim()});
+ annoPiano=Number(data.slice(0,4));save();
+}
+function toggleLavoroAnnuale(i){const x=db.lavoriAnnuali[i];if(!x)return;x.stato=x.stato==='Programmato'?'Eseguito':'Programmato';save()}
+function modificaLavoroAnnuale(i){
+ const x=db.lavoriAnnuali[i];if(!x)return;
+ const date=prompt('Data (AAAA-MM-GG)',x.data);if(date===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date)))return alert('Data non valida');
+ const name=prompt('Lavoro',x.lavoro);if(name===null)return;if(!name.trim())return alert('Indica il lavoro');
+ const plant=prompt('Pianta / zona',x.pianta||'');if(plant===null)return;
+ const note=prompt('Note',x.note||'');if(note===null)return;
+ Object.assign(x,{data:date,lavoro:name.trim(),pianta:plant.trim(),note:note.trim()});annoPiano=Number(date.slice(0,4));save();
+}
+function eliminaLavoroAnnuale(i){if(confirm('Eliminare questo lavoro programmato?')){db.lavoriAnnuali.splice(i,1);save()}}
+let annoBilancio=new Date().getFullYear();
+function bilancioAnnuale(a){
+ const y=annoBilancio,match=x=>String(x.data||'').slice(0,4)===String(y);
+ const spese=db.spese.filter(match),raccolti=db.raccolti.filter(match),irr=db.irrigazioni.filter(match),frutteto=db.eventiFrutteto.filter(x=>match(x)&&x.tipo==='Raccolta'&&x.stato==='Eseguito');
+ const euroTot=spese.reduce((n,x)=>n+Number(x.importo||0),0),kg=raccolti.reduce((n,x)=>n+Number(x.q||0),0),litri=irr.reduce((n,x)=>n+Number(x.litri||0),0),kgFrutteto=frutteto.reduce((n,x)=>n+Number(x.kg||0),0);
+ const price=Object.fromEntries(db.prezziRaccolti.map(x=>[String(x.coltura||'').toLocaleLowerCase('it'),Number(x.prezzo||0)]));
+ const valore=raccolti.reduce((n,x)=>n+Number(x.q||0)*(price[String(x.coltura||'').toLocaleLowerCase('it')]||0),0);
+ const months=MESI_IT.map((m,i)=>{const key=y+'-'+String(i+1).padStart(2,'0');return {mese:m,spese:spese.filter(x=>x.data?.startsWith(key)).reduce((n,x)=>n+Number(x.importo||0),0),kg:raccolti.filter(x=>x.data?.startsWith(key)).reduce((n,x)=>n+Number(x.q||0),0),litri:irr.filter(x=>x.data?.startsWith(key)).reduce((n,x)=>n+Number(x.litri||0),0)}});
+ a.innerHTML=`<h2>📑 Bilancio annuale dell'orto</h2><div class="card"><div class="rowbuttons"><button class="secondary" onclick="annoBilancio--;render()">← Precedente</button><h3>${y}</h3><button class="secondary" onclick="annoBilancio++;render()">Successivo →</button></div>
+ <div class="grid"><div><p class="muted">Spese registrate</p><div class="stat">${euro(euroTot)}</div></div><div><p class="muted">Raccolti generali</p><div class="stat">${kg.toFixed(2)} kg</div></div><div><p class="muted">Acqua registrata</p><div class="stat">${litri.toFixed(1)} L</div></div><div><p class="muted">Raccolti diario frutteto</p><div class="stat">${kgFrutteto.toFixed(2)} kg</div></div></div>
+ <p class="muted">I raccolti del diario frutteto sono mostrati separatamente per evitare doppi conteggi. Il valore del raccolto è una stima, non un ricavo effettivo.</p><p><b>Valore indicativo dei raccolti generali:</b> ${euro(valore)}</p><p><b>Differenza tra valore stimato e spese:</b> ${euro(valore-euroTot)} (non è un utile contabile)</p></div>
+ <div class="card" style="margin-top:15px"><h3>Riepilogo mese per mese</h3><div class="scroll"><table><tr><th>Mese</th><th>Spese</th><th>Raccolti kg</th><th>Acqua L</th></tr>${months.map(x=>`<tr><td>${x.mese}</td><td>${euro(x.spese)}</td><td>${x.kg.toFixed(2)}</td><td>${x.litri.toFixed(1)}</td></tr>`).join('')}</table></div>
+ <button class="secondary" onclick="esportaBilancioCSV()">Esporta riepilogo CSV</button></div>`;
+}
+function esportaBilancioCSV(){
+ const y=annoBilancio,rows=[['Mese','Spese EUR','Raccolti kg','Acqua L']];
+ MESI_IT.forEach((m,i)=>{const key=y+'-'+String(i+1).padStart(2,'0'),sum=(arr,k)=>arr.filter(x=>String(x.data||'').startsWith(key)).reduce((n,x)=>n+Number(x[k]||0),0);rows.push([m,sum(db.spese,'importo'),sum(db.raccolti,'q'),sum(db.irrigazioni,'litri')])});
+ const csv='\uFEFF'+rows.map(row=>row.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='bilancio-orto-'+y+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function economia(a){
+ const years=[...new Set([annoEconomia,new Date().getFullYear(),...db.spese.map(x=>Number((x.data||'').slice(0,4))),...db.raccolti.map(x=>Number((x.data||'').slice(0,4)))] )].filter(y=>y>=2000&&y<=2100).sort((x,y)=>y-x);
+ const expenses=db.spese.map((x,i)=>({...x,i})).filter(x=>Number((x.data||'').slice(0,4))===annoEconomia).sort((x,y)=>String(y.data).localeCompare(String(x.data)));
+ const harvests=db.raccolti.filter(x=>Number((x.data||'').slice(0,4))===annoEconomia);
+ const costs=expenses.reduce((n,x)=>n+Number(x.importo||0),0),kg=harvests.reduce((n,x)=>n+Number(x.q||0),0);
+ const prices=Object.fromEntries(db.prezziRaccolti.map(x=>[x.coltura.toLocaleLowerCase('it'),Number(x.prezzo)||0]));
+ const value=harvests.reduce((n,x)=>n+(Number(x.q)||0)*(prices[String(x.coltura||'').toLocaleLowerCase('it')]||0),0);
+ const cropNames=[...new Set([...harvests.map(x=>x.coltura),...expenses.map(x=>x.coltura),...db.colture.map(x=>x.nome)].filter(Boolean))].sort((x,y)=>x.localeCompare(y,'it'));
+ const table=cropNames.map(name=>{const c=expenses.filter(x=>x.coltura.toLocaleLowerCase('it')===name.toLocaleLowerCase('it')).reduce((n,x)=>n+Number(x.importo||0),0),k=harvests.filter(x=>x.coltura.toLocaleLowerCase('it')===name.toLocaleLowerCase('it')).reduce((n,x)=>n+Number(x.q||0),0),v=k*(prices[name.toLocaleLowerCase('it')]||0);return {name,c,k,v}});
+ const other=expenses.filter(x=>!x.coltura).reduce((n,x)=>n+Number(x.importo||0),0);
+ a.innerHTML=`<h2>💶 Costi e produttività</h2><p class="muted">Analisi indicativa basata sui dati che registri. Il valore del raccolto è stimato e non rappresenta necessariamente un ricavo effettivo. Le spese generali non vengono attribuite automaticamente alle colture.</p>
+ <div class="card"><div class="rowbuttons"><h3>Riepilogo annuale</h3><label>Anno <select id="ecAnno" onchange="annoEconomia=Number(this.value);render()">${years.map(y=>`<option ${y===annoEconomia?'selected':''}>${y}</option>`).join('')}</select></label></div>
+ <div class="grid"><div><div class="muted">Spese registrate</div><div class="stat">${euro(costs)}</div></div><div><div class="muted">Raccolti</div><div class="stat">${kg.toFixed(2)} kg</div></div><div><div class="muted">Valore stimato raccolti</div><div class="stat">${euro(value)}</div></div><div><div class="muted">Differenza indicativa</div><div class="stat">${euro(value-costs)}</div></div></div></div>
+ <div class="card" style="margin-top:15px"><h3>Registra una spesa</h3><div class="form"><label>Data<input id="ecData" type="date" value="${localDay(new Date())}"></label><label>Categoria<select id="ecCategoria"><option>Sementi e piantine</option><option>Concimi</option><option>Trattamenti</option><option>Acqua</option><option>Attrezzature</option><option>Terriccio e materiali</option><option>Altro</option></select></label><label>Coltura (facoltativa)<input id="ecColtura" list="ecColture" placeholder="Vuoto = spesa generale"><datalist id="ecColture">${cropNames.map(x=>`<option value="${esc(x)}">`).join('')}</datalist></label><label>Importo (€)<input id="ecImporto" type="number" min="0.01" step="0.01"></label><label>Descrizione<input id="ecNote" placeholder="Es. piantine di pomodoro"></label></div><button onclick="aggiungiSpesa()">Registra spesa</button></div>
+ <div class="card" style="margin-top:15px"><h3>Valore indicativo dei raccolti</h3><p class="muted">Imposta un valore per kg per ciascuna coltura. Serve per stimare il valore della produzione, non per registrare vendite.</p><div class="form"><label>Coltura<input id="ecPrezzoColtura" list="ecColture" placeholder="Es. Pomodoro"></label><label>Valore €/kg<input id="ecPrezzo" type="number" min="0" step="0.01"></label></div><button onclick="salvaPrezzoRaccolto()">Salva valore al kg</button><div class="scroll"><table><tr><th>Coltura</th><th>€/kg</th><th></th></tr>${db.prezziRaccolti.map((x,i)=>`<tr><td>${esc(x.coltura)}</td><td>${euro(x.prezzo)}</td><td><button class="danger" onclick="eliminaPrezzoRaccolto(${i})">Elimina</button></td></tr>`).join('')}</table></div></div>
+ <div class="card" style="margin-top:15px"><h3>Resa economica per coltura · ${annoEconomia}</h3><div class="scroll"><table><tr><th>Coltura</th><th>Raccolti kg</th><th>Spese dirette</th><th>Valore stimato</th><th>Costo diretto/kg</th></tr>${table.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.k.toFixed(2)}</td><td>${euro(x.c)}</td><td>${euro(x.v)}</td><td>${x.k>0?euro(x.c/x.k):'—'}</td></tr>`).join('')}</table></div><p>Spese generali non attribuite: <b>${euro(other)}</b></p></div>
+ <div class="card" style="margin-top:15px"><h3>Storico spese · ${annoEconomia}</h3><button class="secondary" onclick="esportaSpeseCSV()">Esporta tutte le spese CSV</button><div class="scroll"><table><tr><th>Data</th><th>Categoria</th><th>Coltura</th><th>Importo</th><th>Descrizione</th><th>Azioni</th></tr>${expenses.map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.categoria)}</td><td>${esc(x.coltura||'Generale')}</td><td>${euro(x.importo)}</td><td>${esc(x.note)}</td><td><button class="secondary" onclick="modificaSpesa(${x.i})">Modifica</button> <button class="danger" onclick="eliminaSpesa(${x.i})">Elimina</button></td></tr>`).join('')}</table></div></div>`;
+}
+function aggiungiSpesa(){const data=ecData.value,importo=Number(ecImporto.value);if(!data||!Number.isFinite(importo)||importo<=0)return alert('Inserisci una data e un importo maggiore di zero.');db.spese.push({data,categoria:ecCategoria.value,coltura:ecColtura.value.trim(),importo:Math.round(importo*100)/100,note:ecNote.value.trim()});annoEconomia=Number(data.slice(0,4));save()}
+function modificaSpesa(i){const x=db.spese[i];if(!x)return;const val=prompt('Importo in euro',x.importo);if(val===null)return;const n=Number(val.replace(',','.'));if(!Number.isFinite(n)||n<=0)return alert('Importo non valido');const note=prompt('Descrizione',x.note||'');if(note===null)return;x.importo=Math.round(n*100)/100;x.note=note;save()}
+function eliminaSpesa(i){if(confirm('Eliminare questa spesa?')){db.spese.splice(i,1);save()}}
+function salvaPrezzoRaccolto(){const coltura=ecPrezzoColtura.value.trim(),prezzo=Number(ecPrezzo.value);if(!coltura||!Number.isFinite(prezzo)||prezzo<0||ecPrezzo.value==='')return alert('Inserisci coltura e valore €/kg valido.');const existing=db.prezziRaccolti.find(x=>x.coltura.toLocaleLowerCase('it')===coltura.toLocaleLowerCase('it'));if(existing)existing.prezzo=prezzo;else db.prezziRaccolti.push({coltura,prezzo});save()}
+function eliminaPrezzoRaccolto(i){if(confirm('Eliminare questo valore?')){db.prezziRaccolti.splice(i,1);save()}}
+function esportaSpeseCSV(){const rows=[['Data','Categoria','Coltura','Importo EUR','Descrizione'],...db.spese.map(x=>[x.data,x.categoria,x.coltura,x.importo,x.note])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download='spese-orto.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+
+function statistiche(a){let total=db.raccolti.reduce((n,x)=>n+(Number(x.q)||0),0),litri=db.irrigazioni.reduce((n,x)=>n+(Number(x.litri)||0),0),by={};db.raccolti.forEach(x=>by[x.coltura]=(by[x.coltura]||0)+(Number(x.q)||0));let max=Math.max(1,...Object.values(by));a.innerHTML=`<h2>📊 Statistiche</h2><div class="grid"><div class="card"><div class="muted">Produzione totale</div><div class="stat">${total.toFixed(1)} kg</div></div><div class="card"><div class="muted">Acqua registrata</div><div class="stat">${litri.toFixed(1)} L</div></div><div class="card"><div class="muted">Trattamenti</div><div class="stat">${db.trattamenti.length}</div></div><div class="card"><div class="muted">Alberi da frutto</div><div class="stat">${db.alberi.length}</div></div></div><div class="card" style="margin-top:16px"><h3>Produzione per coltura</h3>${Object.entries(by).map(([name,kg])=>`<p><b>${esc(name)}</b> — ${kg.toFixed(1)} kg</p><div class="bar"><span style="width:${Math.max(2,100*kg/max)}%"></span></div>`).join('')||'<p>Nessun raccolto registrato.</p>'}</div>`}
+
+let filtroAlberoFrutteto='';
+const TIPI_FRUTTETO=['Potatura','Fioritura','Allegagione','Diradamento','Raccolta','Controllo sanitario','Trapianto','Protezione dal freddo','Altro'];
+function apriDiarioAlbero(pid){filtroAlberoFrutteto=pid;page='frutteto';render()}
+function frutteto(a){
+ const trees=catalogoPiante().filter(p=>p.kind==='albero');
+ if(!trees.length){a.innerHTML='<h2>🍎 Diario del frutteto</h2><div class="card">Registra prima un albero in Piante → Alberi da frutto.</div>';return}
+ if(!trees.some(p=>p.id===filtroAlberoFrutteto))filtroAlberoFrutteto=trees[0].id;
+ const p=piantaById(filtroAlberoFrutteto);
+ const rows=db.eventiFrutteto.map((x,i)=>({...x,i})).filter(x=>x.plantId===p.id).sort((x,y)=>String(y.data).localeCompare(String(x.data)));
+ const kg=rows.filter(x=>x.tipo==='Raccolta'&&x.stato==='Eseguito').reduce((n,x)=>n+Number(x.kg||0),0);
+ const years={};rows.filter(x=>x.tipo==='Raccolta'&&x.stato==='Eseguito').forEach(x=>{const y=String(x.data).slice(0,4);years[y]=(years[y]||0)+Number(x.kg||0)});
+ a.innerHTML=`<h2>🍎 Diario del frutteto</h2><div class="card"><label>Seleziona un albero<select id="frAlbero" onchange="filtroAlberoFrutteto=this.value;render()">${trees.map(t=>`<option value="${esc(t.id)}" ${t.id===p.id?'selected':''}>${esc(t.nome)}${t.varieta?' · '+esc(t.varieta):''} (${esc(t.id.slice(-5))})</option>`).join('')}</select></label><p><b>Albero:</b> ${esc(p.nome)} · ${esc(p.varieta||'Varietà non indicata')} · ${esc(p.pos||'Posizione non indicata')}</p><button class="secondary" onclick="apriScheda('${p.id}')">📒 Apri scheda completa</button></div>
+ <div class="card" style="margin-top:15px"><h3>Registra un evento</h3><div class="form">
+ <label>Tipo evento<select id="frTipo">${TIPI_FRUTTETO.map(t=>`<option>${esc(t)}</option>`).join('')}</select></label>
+ <label>Data<input id="frData" type="date" value="${localDay(new Date())}"></label>
+ <label>Stato<select id="frStato"><option>Eseguito</option><option>Programmato</option></select></label>
+ <label>Produzione (kg, solo raccolta)<input id="frKg" type="number" min="0" step="0.01" placeholder="Facoltativo"></label>
+ <label>Osservazioni<input id="frNote" placeholder="Es. potatura leggera, primi fiori..."></label>
+ </div><button onclick="aggiungiEventoFrutteto()">💾 Registra evento</button></div>
+ <div class="card" style="margin-top:15px"><h3>Produzione registrata</h3><div class="stat">${kg.toFixed(2)} kg</div><p class="muted">Somma dei raccolti segnati come eseguiti nel diario di questo albero. Non include automaticamente i raccolti generici della sezione Raccolti.</p>${Object.keys(years).sort().reverse().map(y=>`<p><b>${esc(y)}</b> · ${years[y].toFixed(2)} kg</p>`).join('')}</div>
+ <div class="card" style="margin-top:15px"><h3>Storico e promemoria</h3><div class="scroll"><table><tr><th>Data</th><th>Evento</th><th>Stato</th><th>Kg</th><th>Note</th><th>Azioni</th></tr>${rows.map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.tipo)}</td><td>${esc(x.stato)}</td><td>${x.tipo==='Raccolta'?esc(x.kg||0):'—'}</td><td>${esc(x.note)}</td><td><button class="secondary" onclick="cambiaStatoEventoFrutteto(${x.i})">${x.stato==='Programmato'?'✓ Eseguito':'↩ Programma'}</button> <button class="secondary" onclick="modificaEventoFrutteto(${x.i})">Modifica</button> <button class="danger" onclick="eliminaEventoFrutteto(${x.i})">Elimina</button></td></tr>`).join('')}</table></div></div>`;
+}
+function aggiungiEventoFrutteto(){
+ const data=frData.value,kgText=frKg.value,kg=kgText===''?0:Number(kgText);
+ if(!data||!Number.isFinite(kg)||kg<0)return alert('Inserisci una data e una quantità valida.');
+ if(frTipo.value!=='Raccolta'&&kg>0)return alert('I kg si possono inserire solo per gli eventi di raccolta.');
+ db.eventiFrutteto.push({plantId:filtroAlberoFrutteto,data,tipo:frTipo.value,stato:frStato.value,kg,note:frNote.value.trim()});save();
+}
+function cambiaStatoEventoFrutteto(i){const x=db.eventiFrutteto[i];if(!x)return;x.stato=x.stato==='Programmato'?'Eseguito':'Programmato';save()}
+function modificaEventoFrutteto(i){
+ const x=db.eventiFrutteto[i];if(!x)return;
+ const data=prompt('Data (AAAA-MM-GG)',x.data);if(data===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(data))return alert('Data non valida.');
+ let kg=x.kg||0;
+ if(x.tipo==='Raccolta'){const val=prompt('Kg raccolti',kg);if(val===null)return;kg=Number(val.replace(',','.'));if(!Number.isFinite(kg)||kg<0)return alert('Kg non validi.')}
+ const note=prompt('Note',x.note||'');if(note===null)return;
+ x.data=data;x.kg=kg;x.note=note;save();
+}
+function eliminaEventoFrutteto(i){if(confirm('Eliminare questo evento del frutteto?')){db.eventiFrutteto.splice(i,1);save()}}
+
+function alberi(a){a.innerHTML=`<h2>🌳 Alberi da frutto</h2><div class="card"><h3>Aggiungi un albero</h3><div class="form"><input id="a1" placeholder="Specie (es. limone)"><input id="a2" placeholder="Varietà"><input id="a3" type="date" title="Data impianto"><select id="a4"><option>Piena terra</option><option>Vaso</option></select><input id="a5" placeholder="Posizione"><input id="a6" placeholder="Note"><button onclick="addAlbero()">Aggiungi albero</button></div></div><div class="grid" style="margin-top:16px">${db.alberi.map((x,i)=>`<div class="card"><h3>🌳 ${esc(x.specie)}</h3><p>${esc(x.varieta)} · ${esc(x.sede)}</p><p>Impianto: ${esc(x.data||'Non indicato')}</p><p>Posizione: ${esc(x.pos)}</p><p>${esc(x.note)}</p><button class="secondary" onclick="apriDiarioAlbero('${x.pid}')">🍎 Diario</button> <button class="secondary" onclick="apriScheda('${x.pid}')">📒 Scheda</button> <button class="danger" onclick="del('alberi',${i})">Elimina</button></div>`).join('')||'<div class="card">Non hai ancora registrato alberi.</div>'}</div>`}
+function addAlbero(){if(!a1.value.trim())return alert('Indica la specie');db.alberi.push({pid:uidPianta(),specie:a1.value.trim(),varieta:a2.value,data:a3.value,sede:a4.value,pos:a5.value,note:a6.value});save()}
+
+let meteoStato={loading:false,errore:'',data:null,aggiornato:''};
+function meteo(a){
+ const c=db.impostazioniMeteo;
+ const d=meteoStato.data?.daily,dates=d?.time||[];
+ const forecast=dates.map((day,i)=>({day,min:d.temperature_2m_min[i],max:d.temperature_2m_max[i],rain:d.precipitation_sum[i],prob:d.precipitation_probability_max[i]}));
+ const alerts=[];
+ forecast.forEach(x=>{
+  if(x.min!==null&&x.min<=Number(c.gelata))alerts.push({day:x.day,msg:'🥶 Temperatura minima prevista '+x.min+' °C (soglia '+c.gelata+' °C). Proteggi le piante sensibili se necessario.'});
+  if(x.max!==null&&x.max>=Number(c.caldo))alerts.push({day:x.day,msg:'☀️ Massima prevista '+x.max+' °C (soglia '+c.caldo+' °C). Controlla terreno e irrigazione.'});
+  if(x.rain!==null&&x.rain>=Number(c.pioggia))alerts.push({day:x.day,msg:'🌧️ Precipitazione prevista '+x.rain+' mm (soglia '+c.pioggia+' mm). Valuta se rimandare l’irrigazione.'});
+ });
+ a.innerHTML=`<h2>🌦️ Meteo e avvisi per l'orto</h2>
+ <div class="card"><h3>Previsioni per ${esc(c.localita)}</h3><p class="muted">Dati previsionali Open-Meteo. Richiedono Internet e sono soggetti a variazioni. Gli avvisi appaiono solo quando apri o aggiorni questa pagina, senza notifiche push.</p>
+ <p><button onclick="aggiornaMeteo()" ${meteoStato.loading?'disabled':''}>${meteoStato.loading?'⏳ Caricamento...':'↻ Aggiorna previsioni'}</button></p>
+ ${meteoStato.aggiornato?`<p class="muted">Ultimo aggiornamento: ${esc(meteoStato.aggiornato)}</p>`:''}
+ ${meteoStato.errore?`<p class="muted">⚠️ ${esc(meteoStato.errore)}</p>`:''}
+ ${!d?'<p>Premi «Aggiorna previsioni» per consultare il meteo. Se sei offline, il resto del gestionale continua a funzionare.</p>':''}
+ ${d?`<div class="scroll"><table><tr><th>Giorno</th><th>Min °C</th><th>Max °C</th><th>Pioggia mm</th><th>Probabilità pioggia</th></tr>${forecast.map(x=>`<tr><td>${esc(x.day)}</td><td>${esc(x.min??'—')}</td><td>${esc(x.max??'—')}</td><td>${esc(x.rain??'—')}</td><td>${x.prob===null?'—':esc(x.prob)+'%'}</td></tr>`).join('')}</table></div>`:''}
+ </div>
+ <div class="card" style="margin-top:15px"><h3>⚠️ Avvisi meteo</h3>
+ ${d?(alerts.map(x=>`<p><b>${esc(x.day)}</b> · ${esc(x.msg)}</p>`).join('')||'<p class="muted">Nessuna soglia superata nei giorni previsti.</p>'):'<p class="muted">Aggiorna le previsioni per vedere gli avvisi.</p>'}
+ </div>
+ <div class="card" style="margin-top:15px"><h3>⚙️ Impostazioni e soglie</h3><p class="muted">Le coordinate sono modificabili per usare il meteo di un altro luogo. La località è solo un'etichetta: i dati dipendono da latitudine e longitudine.</p>
+ <div class="form"><label>Località<input id="mtLocalita" value="${esc(c.localita)}"></label>
+ <label>Latitudine<input id="mtLat" type="number" step="0.0001" min="-90" max="90" value="${esc(c.lat)}"></label>
+ <label>Longitudine<input id="mtLon" type="number" step="0.0001" min="-180" max="180" value="${esc(c.lon)}"></label>
+ <label>Avviso freddo: minima ≤ °C<input id="mtGelata" type="number" step="0.5" value="${esc(c.gelata)}"></label>
+ <label>Avviso caldo: massima ≥ °C<input id="mtCaldo" type="number" step="0.5" value="${esc(c.caldo)}"></label>
+ <label>Avviso pioggia: ≥ mm/giorno<input id="mtPioggia" type="number" min="0" step="0.5" value="${esc(c.pioggia)}"></label></div>
+ <button onclick="salvaImpostazioniMeteo()">Salva impostazioni</button></div>
+ <div class="card" style="margin-top:15px"><p><a href="https://www.arpae.it/it/temi-ambientali/meteo/previsioni-meteo" target="_blank" rel="noopener noreferrer">Consulta anche ARPAE Emilia-Romagna ↗</a></p><p class="muted">Previsioni automatiche: Open-Meteo, https://open-meteo.com/. Non sostituiscono allerte ufficiali di protezione civile.</p></div>`;
+}
+function salvaImpostazioniMeteo(){
+ const lat=Number(mtLat.value),lon=Number(mtLon.value),gelata=Number(mtGelata.value),caldo=Number(mtCaldo.value),pioggia=Number(mtPioggia.value);
+ if(!mtLocalita.value.trim()||!mtLat.value||!mtLon.value||!mtGelata.value||!mtCaldo.value||!mtPioggia.value||!Number.isFinite(lat)||lat< -90||lat>90||!Number.isFinite(lon)||lon< -180||lon>180||![gelata,caldo,pioggia].every(Number.isFinite)||pioggia<0)return alert('Controlla località, coordinate e soglie.');
+ const changed=lat!==db.impostazioniMeteo.lat||lon!==db.impostazioniMeteo.lon;
+ db.impostazioniMeteo={localita:mtLocalita.value.trim(),lat,lon,gelata,caldo,pioggia};
+ if(changed)meteoStato={loading:false,errore:'',data:null,aggiornato:''};
+ save();
+}
+async function aggiornaMeteo(){
+ if(meteoStato.loading)return;
+ meteoStato.loading=true;meteoStato.errore='';render();
+ try{
+  const c=db.impostazioniMeteo;
+  const url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(c.lat)+'&longitude='+encodeURIComponent(c.lon)+'&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Europe%2FRome&forecast_days=7';
+  const response=await fetch(url,{cache:'no-store'});
+  if(!response.ok)throw new Error('Servizio meteo non disponibile (HTTP '+response.status+').');
+  const json=await response.json();
+  if(!json.daily||!Array.isArray(json.daily.time))throw new Error('Risposta meteo non valida.');
+  meteoStato.data=json;meteoStato.aggiornato=new Date().toLocaleString('it-IT');
+ }catch(e){meteoStato.errore='Impossibile scaricare le previsioni: '+e.message+'. Verifica Internet o riprova più tardi.'}
+ finally{meteoStato.loading=false;if(page==='meteo')render()}
+}
+
+
+function addDays(iso,n){if(!iso||!Number.isFinite(Number(n)))return '';let d=new Date(iso+'T12:00:00');if(isNaN(d))return '';d.setDate(d.getDate()+Number(n));return localDay(d)}
+function scadenze(){let out=[];db.trappole.forEach((x,i)=>{if(x.stato!=='Attiva')return;if(x.prossimo)out.push({data:x.prossimo,tipo:'🪤 Controllo trappola',coltura:x.nome,note:x.insetto||'',origine:'trappole',indice:i});if(x.scadenza)out.push({data:x.scadenza,tipo:'🪤 Sostituzione attrattivo',coltura:x.nome,note:x.tipo||'',origine:'trappole',indice:i})});db.lavoriAnnuali.forEach((x,i)=>{if(x.stato==='Programmato'&&x.data)out.push({data:x.data,tipo:'Piano annuale · '+x.lavoro,coltura:x.pianta||'',note:x.note||'',origine:'lavoriAnnuali',indice:i})});db.eventiFrutteto.forEach((x,i)=>{if(x.stato==='Programmato'&&x.data)out.push({data:x.data,tipo:'Frutteto · '+x.tipo,coltura:piantaById(x.plantId)?.nome||'Albero',note:x.note||'',origine:'eventiFrutteto',indice:i})});db.attivita.forEach((x,i)=>{if(x.data)out.push({data:x.data,tipo:x.tipo||'Attività',coltura:x.coltura||'',note:x.note||'',origine:'attivita',indice:i})});db.trattamenti.forEach((x,i)=>{if(x.prossimo)out.push({data:x.prossimo,tipo:'Trattamento da rifare',coltura:x.coltura||'',note:x.prodotto||'',origine:'trattamenti',indice:i})});db.concimazioni.forEach((x,i)=>{if(x.prossimo)out.push({data:x.prossimo,tipo:'Concimazione da rifare',coltura:x.coltura||'',note:x.prodotto||'',origine:'concimazioni',indice:i})});db.semine.filter(x=>x.stato==='Programmato'&&x.data).forEach((x,i)=>out.push({data:x.data,tipo:x.tipo||'Semina',coltura:x.coltura,note:x.zona||'',origine:'semine',indice:i}));db.pianiIrrigazione.forEach((x,i)=>{if(x.prossima)out.push({data:x.prossima,tipo:'Irrigazione programmata',coltura:x.coltura||'',note:x.litri?x.litri+' L indicativi':'Controllare terreno',origine:'pianiIrrigazione',indice:i})});return out.sort((a,b)=>a.data.localeCompare(b.data))}
+function promemoria(a){let today=localDay(new Date()),week=addDays(today,7),all=scadenze(),due=all.filter(x=>x.data<=week);a.innerHTML=`<h2>🔔 Promemoria e scadenze</h2><div class="card"><p>Attività in ritardo, oggi e nei prossimi 7 giorni. Questi promemoria sono visibili quando apri il gestionale; non inviano notifiche di sistema.</p>${due.map(x=>`<p class="due"><span class="pill">${x.data<today?'In ritardo':x.data===today?'Oggi':'In arrivo'}</span> <b>${esc(x.data)}</b> — ${esc(x.tipo)} · ${esc(x.coltura)} ${esc(x.note)}</p>`).join('')||'<p>Nessuna scadenza ravvicinata.</p>'}</div><div class="card" style="margin-top:14px"><h3>Scadenze future</h3>${all.filter(x=>x.data>week).map(x=>`<p>${esc(x.data)} — ${esc(x.tipo)} · ${esc(x.coltura)}</p>`).join('')||'<p>Nessuna.</p>'}</div>`}
+function controlliArchivio(){
+ const issues=[],add=(messaggio,sezione)=>issues.push({messaggio,sezione});
+ const unique=(items,key,label,section)=>{const seen=new Map();items.forEach((x,i)=>{const val=key(x);if(!val)return;if(seen.has(val))add(`${label}: possibile duplicato alle righe ${seen.get(val)+1} e ${i+1}`,section);else seen.set(val,i)})};
+ unique(db.colture,x=>[x.nome,x.var,x.data,x.pos].map(v=>String(v||'').trim().toLowerCase()).join('|'),'Colture','colture');
+ unique(db.alberi,x=>[x.specie,x.varieta,x.data,x.pos].map(v=>String(v||'').trim().toLowerCase()).join('|'),'Alberi','alberi');
+ unique(db.prodotti,x=>[x.nome,x.lotto].map(v=>String(v||'').trim().toLowerCase()).join('|'),'Magazzino','prodotti');
+ db.colture.forEach((x,i)=>{if(!String(x.nome||'').trim())add(`Coltura ${i+1}: nome mancante`,'colture')});
+ db.alberi.forEach((x,i)=>{if(!String(x.specie||'').trim())add(`Albero ${i+1}: specie mancante`,'alberi')});
+ db.prodotti.forEach((x,i)=>{if(!String(x.nome||'').trim())add(`Prodotto ${i+1}: nome mancante`,'prodotti');if(!Number.isFinite(Number(x.giacenza))||Number(x.giacenza)<0)add(`Prodotto ${i+1}: giacenza non valida`,'prodotti')});
+ db.mappa.forEach((x,i)=>{if(x.plantId&&!piantaById(x.plantId))add(`Mappa: elemento ${i+1} (${x.nome||'senza nome'}) collegato a una scheda non esistente`,'mappa')});
+ db.eventiFrutteto.forEach((x,i)=>{if(x.plantId&&!piantaById(x.plantId))add(`Diario frutteto: evento ${i+1} senza albero associato`,'frutteto')});
+ db.irrigazioni.forEach((x,i)=>{if(!Number.isFinite(Number(x.litri))||Number(x.litri)<=0)add(`Irrigazione ${i+1}: litri non validi`,'irrigazioni')});
+ db.raccolti.forEach((x,i)=>{if(!Number.isFinite(Number(x.q))||Number(x.q)<0)add(`Raccolto ${i+1}: quantità non valida`,'raccolti')});
+ return issues;
+}
+function controlloDati(a){
+ const issues=controlliArchivio();
+ a.innerHTML=`<h2>🛡️ Controllo qualità dei dati</h2><div class="card"><p>Il controllo cerca campi mancanti, possibili duplicati, giacenze o quantità non valide e collegamenti interrotti. <b>Non modifica né cancella alcun dato.</b></p><p><b>${issues.length}</b> segnalazioni</p><button onclick="render()">↻ Ripeti controllo</button> <button class="secondary" onclick="backup()">💾 Esporta backup prima delle correzioni</button></div>
+ <div class="card" style="margin-top:15px">${issues.map(x=>`<p>⚠️ ${esc(x.messaggio)} <button class="secondary" onclick="page='${x.sezione}';render()">Apri sezione</button></p>`).join('')||'<p>✅ Nessuna anomalia rilevata. Il controllo non garantisce che ogni dato sia corretto.</p>'}</div>`;
+}
+function ricerca(a){
+ const defs=[
+ ['colture','Coltura',x=>[x.nome,x.var,x.pos,x.note].join(' ')],['alberi','Albero',x=>[x.specie,x.varieta,x.pos,x.note].join(' ')],
+ ['irrigazioni','Irrigazione',x=>[x.coltura,x.litri,'L',x.metodo,x.note].join(' ')],['concimazioni','Concimazione',x=>[x.coltura,x.prodotto,x.note].join(' ')],
+ ['trattamenti','Trattamento',x=>[x.coltura,x.prodotto,x.problema,x.note].join(' ')],['raccolti','Raccolto',x=>[x.coltura,x.q,'kg',x.note].join(' ')],
+ ['attivita','Attività',x=>[x.tipo,x.coltura,x.note].join(' ')],['prodotti','Prodotto magazzino',x=>[x.nome,x.produttore,x.lotto,x.composizione,x.note].join(' ')],
+ ['spese','Spesa',x=>[x.categoria,x.coltura,x.descrizione,x.note,x.importo].join(' ')],['semine','Semina/trapianto',x=>[x.tipo,x.coltura,x.varieta,x.zona,x.note].join(' ')],
+ ['rotazioni','Rotazione',x=>[x.coltura,x.famiglia,x.zona,x.anno,x.note].join(' ')],['eventiFrutteto','Diario frutteto',x=>[x.tipo,piantaById(x.plantId)?.nome||'',x.note].join(' ')],
+ ['mappa','Elemento mappa',x=>[x.nome,x.tipo,x.note].join(' ')]
+ ];
+ const records=[];defs.forEach(([key,tipo,fmt])=>(db[key]||[]).forEach(x=>records.push({tipo,sezione:key==='spese'?'economia':key==='eventiFrutteto'?'frutteto':key,data:x.data||x.scadenza||'',testo:fmt(x)})));
+ window.searchRecords=records;
+ a.innerHTML=`<h2>🔎 Ricerca generale</h2><div class="card"><label>Termine di ricerca<input class="search" id="searchTerm" placeholder="Pianta, varietà, prodotto, lotto, intervento..." oninput="showResults()"></label><label>Categoria<select id="searchCategory" onchange="showResults()"><option value="">Tutte le categorie</option>${[...new Set(records.map(x=>x.tipo))].map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select></label><div id="searchResults"></div></div>`;
+ showResults();
+}
+function showResults(){
+ const q=document.getElementById('searchTerm').value.trim().toLocaleLowerCase('it'),cat=document.getElementById('searchCategory').value;
+ const matches=(window.searchRecords||[]).filter(x=>(!cat||x.tipo===cat)&&(!q||(x.tipo+' '+x.data+' '+x.testo).toLocaleLowerCase('it').includes(q)));
+ document.getElementById('searchResults').innerHTML=`<p class="muted">${matches.length} risultati · massimo 150 visualizzati</p><div class="scroll"><table><tr><th>Tipo</th><th>Data</th><th>Dettaglio</th><th></th></tr>${matches.slice(0,150).map(x=>`<tr><td>${esc(x.tipo)}</td><td>${esc(x.data)}</td><td>${esc(x.testo)}</td><td><button class="secondary" onclick="page='${x.sezione}';render()">Apri</button></td></tr>`).join('')}</table></div>`;
+}
+
+
+
+// Magazzino sementi: quantità in semi, grammi o confezioni. Nessuna conversione automatica fra unità.
+function sementi(a){
+ const lista=db.sementi||[],oggi=localDay(new Date());
+ a.innerHTML=`<h2>🌰 Magazzino sementi</h2><p class="muted">Gestisci semi, grammi o confezioni. Lo scarico automatico avviene quando registri una semina già eseguita.</p>
+ <div class="card"><h3>Aggiungi una semente</h3><div class="form">
+ <label>Ortaggio<input id="smColtura" placeholder="Es. Zucchino"></label>
+ <label>Varietà<input id="smVarieta" placeholder="Es. Romanesco"></label>
+ <label>Marca<input id="smMarca" placeholder="Facoltativa"></label>
+ <label>Lotto<input id="smLotto" placeholder="Facoltativo"></label>
+ <label>Quantità<input id="smQuantita" type="number" min="0" step="any"></label>
+ <label>Unità<select id="smUnita"><option value="semi">Semi</option><option value="g">Grammi (g)</option><option value="confezioni">Confezioni</option></select></label>
+ <label>Acquisto<input id="smAcquisto" type="date"></label>
+ <label>Scadenza<input id="smScadenza" type="date"></label>
+ <label>Germinabilità %<input id="smGerminabilita" type="number" min="0" max="100" step="any"></label>
+ <label>Scorta minima<input id="smMinimo" type="number" min="0" step="any" value="0"></label>
+ <label>Note<input id="smNote" placeholder="Conservazione, provenienza..."></label></div>
+ <button onclick="aggiungiSemente()">＋ Aggiungi semente</button></div>
+ <div class="card" style="margin-top:15px"><h3>Scorte (${lista.length})</h3><div class="scroll"><table><tr><th>Semente</th><th>Marca / lotto</th><th>Disponibilità</th><th>Scadenza</th><th>Germinabilità</th><th>Azioni</th></tr>
+ ${lista.map(x=>`<tr><td><b>${esc(x.coltura)}</b><div>${esc(x.varieta)}</div></td><td>${esc(x.marca)}<div class="muted">${esc(x.lotto)}</div></td><td>${esc(x.quantita)} ${esc(x.unita)} ${Number(x.quantita)<=Number(x.minimo||0)?'<span class="tag">Scorta bassa</span>':''}</td><td>${esc(x.scadenza||'—')} ${x.scadenza&&x.scadenza<oggi?'<span class="tag">Scaduta</span>':''}</td><td>${x.germinabilita===''?'—':esc(x.germinabilita)+'%'}</td><td><button class="secondary" onclick="rettificaSemente('${x.id}')">± Scorta</button> <button class="danger" onclick="eliminaSemente('${x.id}')">Elimina</button></td></tr>`).join('')||'<tr><td colspan="6">Nessuna semente registrata.</td></tr>'}</table></div></div>
+ <div class="card" style="margin-top:15px"><h3>Ultimi movimenti</h3><div class="scroll"><table><tr><th>Data</th><th>Operazione</th><th>Quantità</th></tr>${(db.movimentiSementi||[]).slice(-30).reverse().map(m=>`<tr><td>${esc(m.data)}</td><td>${esc(m.tipo)} · ${esc(lista.find(x=>x.id===m.sementeId)?.coltura||'Semente eliminata')}</td><td>${m.quantita>0?'+':''}${esc(m.quantita)} ${esc(m.unita)}</td></tr>`).join('')}</table></div></div>`;
+}
+function aggiungiSemente(){
+ const coltura=smColtura.value.trim(),q=Number(smQuantita.value),min=Number(smMinimo.value);
+ if(!coltura||smQuantita.value===''||!Number.isFinite(q)||q<0||!Number.isFinite(min)||min<0)return alert('Inserisci ortaggio e quantità valide.');
+ if(smGerminabilita.value!==''&&(Number(smGerminabilita.value)<0||Number(smGerminabilita.value)>100))return alert('Germinabilità tra 0 e 100.');
+ db.sementi.push({id:'seed_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),coltura,varieta:smVarieta.value.trim(),marca:smMarca.value.trim(),lotto:smLotto.value.trim(),quantita:q,unita:smUnita.value,acquisto:smAcquisto.value,scadenza:smScadenza.value,germinabilita:smGerminabilita.value,minimo:min,note:smNote.value.trim()});save();
+}
+function rettificaSemente(id){
+ const x=db.sementi.find(x=>x.id===id);if(!x)return;
+ const raw=prompt('Variazione di scorta per '+x.coltura+' ('+x.unita+'). Esempio: +10 o -2','0');if(raw===null)return;
+ if(!/^[+-]?\d+(?:[.,]\d+)?$/.test(raw.trim()))return alert('Inserisci un numero valido.');
+ const n=Number(raw.replace(',','.'));if(!Number.isFinite(n)||Number(x.quantita)+n<0)return alert('Scorta insufficiente.');
+ if(!n)return;x.quantita=Number((Number(x.quantita)+n).toFixed(5));
+ db.movimentiSementi.push({id:'ms_'+Date.now(),sementeId:id,data:localDay(new Date()),quantita:n,unita:x.unita,tipo:'Rettifica manuale'});save();
+}
+function eliminaSemente(id){if(!confirm('Eliminare questa semente? Lo storico delle semine resterà conservato.'))return;db.sementi=db.sementi.filter(x=>x.id!==id);save()}
+// Cloud V8.0: niente chiavi segrete nel codice. Le credenziali restano nella sessione del browser.
+const CLOUD_URL='https://ejkijlifnaddkzvynbwt.supabase.co';
+const CLOUD_KEY_STORAGE='ortoCloudPublishableKey_v1';
+let cloudKey=localStorage.getItem(CLOUD_KEY_STORAGE)||'';
+let cloudSession=null,cloudVersion=null,cloudDirty=false,cloudBusy=false,cloudTimer=null;
+let cloudStatus='Non collegato. I dati locali non sono stati modificati.';
+let cloudSessionLoaded=false;
+function cloudChanged(){cloudDirty=true;if(cloudSession&&cloudVersion!==null){clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudUpload(false),1500)}}
+function cloudMessage(t){cloudStatus=t;const e=document.getElementById('cloudStatus');if(e)e.textContent=t}
+function cloudHeaders(auth=true){const h={'apikey':cloudKey,'Content-Type':'application/json'};if(auth&&cloudSession)h.Authorization='Bearer '+cloudSession.access_token;return h}
+async function cloudRequest(path,opts={}){const r=await fetch(CLOUD_URL+path,{...opts,headers:{...cloudHeaders(),...(opts.headers||{})},cache:'no-store'});let body;try{body=await r.json()}catch{body=null}if(!r.ok)throw Error((body&&(body.message||body.msg||body.error_description||body.error))||('HTTP '+r.status));return {body,status:r.status}}
+async function cloudToken(){if(!cloudSession)throw Error('Accedi prima.');if(Date.now()<cloudSession.expires_at-60000)return;const r=await cloudRequest('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:cloudSession.refresh_token})});cloudSession={...r.body,expires_at:Date.now()+r.body.expires_in*1000};sessionStorage.setItem('ortoCloudSession',JSON.stringify(cloudSession))}
+async function cloudLogin(){const email=document.getElementById('cloudEmail').value.trim(),password=document.getElementById('cloudPassword').value,key=document.getElementById('cloudKey').value.trim();if(!email||!password||!key)return alert('Inserisci email, password e publishable key.');if(!/^sb_publishable_/.test(key))return alert('Usa soltanto la publishable key, mai secret o service_role.');cloudKey=key;localStorage.setItem(CLOUD_KEY_STORAGE,key);try{cloudMessage('Accesso in corso...');const r=await cloudRequest('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})});cloudSession={...r.body,expires_at:Date.now()+r.body.expires_in*1000};sessionStorage.setItem('ortoCloudSession',JSON.stringify(cloudSession));cloudVersion=null;cloudDirty=false;cloudMessage('Accesso riuscito. Scegli come inizializzare i dati, senza sovrascrivere nulla.');render()}catch(e){cloudMessage('Accesso non riuscito: '+e.message)}}
+function cloudLogout(){clearTimeout(cloudTimer);cloudSession=null;cloudVersion=null;cloudDirty=false;sessionStorage.removeItem('ortoCloudSession');cloudMessage('Disconnesso. Dati locali conservati.');render()}
+async function cloudFetch(){await cloudToken();const r=await cloudRequest('/rest/v1/orto_dati?select=dati,versione&user_id=eq.'+encodeURIComponent(cloudSession.user.id),{headers:{Accept:'application/json'}});return r.body?.[0]||null}
+async function cloudInitialize(){if(!cloudSession)return; if(!confirm('Creare il primo archivio cloud usando i dati attualmente presenti in QUESTO browser? Scarica prima un backup JSON.'))return;try{cloudBusy=true;await cloudToken();const remote=await cloudFetch();if(remote){cloudMessage('Esiste già un archivio cloud: nessun dato sovrascritto. Usa Scarica dal cloud.');return}const r=await cloudRequest('/rest/v1/orto_dati',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({user_id:cloudSession.user.id,dati:db,versione:1})});cloudVersion=r.body?.[0]?.versione||1;cloudDirty=false;cloudMessage('Archivio cloud inizializzato. Versione '+cloudVersion+'.');render()}catch(e){cloudMessage('Inizializzazione non riuscita: '+e.message)}finally{cloudBusy=false}}
+async function cloudDownload(){if(!cloudSession)return;try{cloudBusy=true;const remote=await cloudFetch();if(!remote){cloudMessage('Archivio cloud ancora vuoto. Inizializzalo dal Mac che contiene tutti i dati.');return}if(!remote.dati||!Array.isArray(remote.dati.colture)||!Array.isArray(remote.dati.alberi))throw Error('Archivio cloud non riconosciuto');if(!confirm('Sostituire i dati locali di questo browser con quelli cloud? Scarica prima un backup JSON se vuoi conservarli.'))return;db=remote.dati;db.sementi ||= [];db.movimentiSementi ||= [];cloudVersion=remote.versione;cloudDirty=false;localStorage.setItem(KEY,JSON.stringify(db));ensurePlantIds();cloudMessage('Dati scaricati dal cloud. Versione '+cloudVersion+'.');render()}catch(e){cloudMessage('Download non riuscito: '+e.message)}finally{cloudBusy=false}}
+async function cloudUpload(manual=true){if(!cloudSession||cloudBusy)return;if(cloudVersion===null){if(manual)cloudMessage('Prima scegli Inizializza archivio oppure Scarica dal cloud.');return}if(!cloudDirty&&!manual)return;try{cloudBusy=true;await cloudToken();const snap=JSON.stringify(db),v=cloudVersion;const r=await cloudRequest('/rest/v1/orto_dati?user_id=eq.'+encodeURIComponent(cloudSession.user.id)+'&versione=eq.'+v,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({dati:JSON.parse(snap),versione:v+1,aggiornato_il:new Date().toISOString()})});if(!Array.isArray(r.body)||r.body.length!==1){cloudDirty=true;cloudVersion=null;cloudMessage('CONFLITTO: altri dati sono stati salvati dal secondo computer. Nessuna sovrascrittura. Esporta backup e confronta prima di scaricare dal cloud.');return}cloudVersion=v+1;cloudDirty=JSON.stringify(db)!==snap;cloudMessage('Sincronizzato sul cloud · versione '+cloudVersion+(cloudDirty?' · altre modifiche in attesa':''));if(cloudDirty){clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudUpload(false),1500)}}catch(e){cloudDirty=true;cloudMessage('Sincronizzazione non riuscita: '+e.message+' · dati conservati localmente.')}finally{cloudBusy=false}}
+async function cloudCheck(){if(!cloudSession||cloudBusy||cloudDirty)return;try{const remote=await cloudFetch();if(remote&&cloudVersion!==null&&remote.versione!==cloudVersion){cloudMessage('Ci sono modifiche dal secondo computer. Premi Scarica dal cloud per aggiornare questa schermata.')}}catch(e){cloudMessage('Controllo cloud non riuscito: '+e.message)}}
+function cloudPage(a){a.innerHTML=`<h2>☁️ Sincronizzazione Mac e Linux</h2><div class="card"><h3>Stato</h3><p id="cloudStatus" role="status">${esc(cloudStatus)}</p><p class="muted">I dati restano anche in questo browser. Il primo caricamento è manuale per evitare di perdere informazioni. Prima di ogni passaggio importante esporta un backup JSON.</p><button class="secondary" onclick="backup()">💾 Scarica backup JSON</button></div>${!cloudSession?`<div class="card" style="margin-top:15px"><h3>Accedi al tuo archivio</h3><p class="muted">Inserisci la publishable key del progetto Supabase (non la secret key). Email e password sono quelle dell'utente creato in Authentication → Users. La password non viene salvata.</p><div class="form"><label>Publishable key<input id="cloudKey" type="text" autocomplete="off" value="${esc(cloudKey)}" placeholder="sb_publishable_..."></label><label>Email<input id="cloudEmail" type="email" autocomplete="username"></label><label>Password<input id="cloudPassword" type="password" autocomplete="current-password"></label></div><button onclick="cloudLogin()">Accedi</button></div>`:`<div class="card" style="margin-top:15px"><h3>Archivio cloud</h3><p>Connesso come <b>${esc(cloudSession.user?.email||'utente')}</b> · Versione locale nota: <b>${cloudVersion??'non inizializzata'}</b></p><div class="rowbuttons"><button onclick="cloudInitialize()">1. Inizializza dal Mac</button><button class="secondary" onclick="cloudDownload()">2. Scarica dal cloud</button><button class="secondary" onclick="cloudUpload(true)">Salva modifiche sul cloud</button><button class="secondary" onclick="cloudCheck()">Controlla aggiornamenti</button><button class="danger" onclick="cloudLogout()">Esci</button></div><p class="muted">Prima volta: sul Mac che contiene i dati completi usa “Inizializza dal Mac” una sola volta. Su Linux accedi e premi “Scarica dal cloud”. Le modifiche successive vengono inviate automaticamente quando la connessione è attiva. Se due computer modificano contemporaneamente, la versione blocca la sovrascrittura e chiede un intervento manuale.</p></div>`}`}
+try{const ss=JSON.parse(sessionStorage.getItem('ortoCloudSession')||'null');if(ss&&ss.access_token&&ss.user){cloudSession=ss;cloudStatus='Sessione recuperata. Apri Sincronizzazione per verificare i dati.'}}catch{}
+window.addEventListener('focus',()=>{if(cloudSession)cloudCheck()});
+setInterval(()=>{if(cloudSession)cloudCheck()},60000);
+
+render();
+</script>
+</body></html>
