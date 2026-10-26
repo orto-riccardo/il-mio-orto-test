@@ -507,7 +507,10 @@ function eliminaProdotto(i){if(db.trappole.some(t=>t.prodottoId===db.prodotti[i]
 async function importaCatalogo(){let f=document.getElementById('catalogFile').files[0];if(!f)return alert('Scegli un JSON');try{let raw=JSON.parse(await f.text()),arr=Array.isArray(raw)?raw:raw.prodotti;if(!Array.isArray(arr)||arr.length>1000)throw Error('Formato non valido o troppe schede');let valid=arr.filter(x=>x&&typeof x.nome==='string'&&x.nome.trim()&&['concimi','trattamenti','trappole','attrattivi'].includes(x.tipo));if(!valid.length)throw Error('Nessuna scheda valida');if(!confirm('Importare '+valid.length+' schede? Controlla le fonti e i dosaggi prima di usarle.'))return;for(let x of valid){if(db.prodotti.some(p=>p.tipo===x.tipo&&p.nome.toLowerCase()===x.nome.toLowerCase()))continue;db.prodotti.push({id:'pr_'+Date.now()+Math.random(),tipo:x.tipo,nome:String(x.nome).slice(0,150),produttore:String(x.produttore||'').slice(0,150),composizione:String(x.composizione||'').slice(0,250),impiego:String(x.impiego||'').slice(0,250),dose:'',doseUnita:'',carenza:'',fonte:String(x.fonte||'').slice(0,500),verifica:String(x.verifica||'').slice(0,30),unita:['g','kg','ml','L','pz'].includes(x.unita)?x.unita:'g',giacenza:0,lotto:'',scadenza:'',minimo:0,fornitore:'',costo:0,note:'Importato da catalogo: verificare etichetta e autorizzazioni'});}save();alert('Importazione completata. Dosi non importate automaticamente per sicurezza.')}catch(e){alert('Importazione non riuscita: '+e.message)}}
 function esportaCatalogo(){let blob=new Blob([JSON.stringify({prodotti:db.prodotti},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='catalogo-prodotti-orto.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 
-function selectColture(id){return `<select id="${id}"><option value="">Seleziona coltura</option>${db.colture.map(c=>`<option value="${esc(c.nome)}">${esc(c.nome)}${c.var?' — '+esc(c.var):''}</option>`).join('')}</select>`}
+function selectColture(id){
+ const nomi=[...new Set(catalogoPiante().map(p=>p.nome).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'it'));
+ return `<select id="${id}"><option value="">Seleziona coltura o albero</option>${nomi.map(nome=>`<option value="${esc(nome)}">${esc(nome)}</option>`).join('')}</select>`;
+}
 
 function irrigazioni(a){
  const today=localDay(new Date());
