@@ -978,6 +978,44 @@ try{const ss=JSON.parse(sessionStorage.getItem('ortoCloudSession_TEST')||'null')
 window.addEventListener('focus',()=>{if(cloudSession)cloudCheck()});
 setInterval(()=>{if(cloudSession)cloudCheck()},60000);
 
-render();
+
+// Recupero password per il solo progetto TEST. Il token resta in memoria e viene tolto dall'URL.
+let recoveryAccessToken=null;
+function recoveryScreen(message=''){
+  document.getElementById('app').innerHTML=`<h2>🔐 Nuova password — Il Mio Orto TEST</h2><div class="card" style="max-width:620px"><p>Inserisci una nuova password per il tuo utente TEST. Non condividerla in chat.</p><form id="recoveryForm"><div class="form"><label>Nuova password<input id="recoveryPassword" type="password" minlength="8" autocomplete="new-password" required></label><label>Ripeti password<input id="recoveryConfirm" type="password" minlength="8" autocomplete="new-password" required></label></div><button type="submit">Salva nuova password</button></form><p id="recoveryStatus" role="status">${esc(message)}</p></div>`;
+  document.getElementById('recoveryForm').addEventListener('submit',recoverySubmit);
+}
+async function recoverySubmit(event){
+  event.preventDefault();
+  const password=document.getElementById('recoveryPassword').value;
+  const confirmation=document.getElementById('recoveryConfirm').value;
+  const status=document.getElementById('recoveryStatus');
+  if(password.length<8){status.textContent='Usa almeno 8 caratteri.';return}
+  if(password!==confirmation){status.textContent='Le due password non coincidono.';return}
+  if(!recoveryAccessToken){status.textContent='Link scaduto o non valido. Richiedi una nuova email di recupero.';return}
+  status.textContent='Salvataggio in corso...';
+  try{
+    const response=await fetch(CLOUD_URL+'/auth/v1/user',{
+      method:'PUT',headers:{apikey:cloudKey,Authorization:'Bearer '+recoveryAccessToken,'Content-Type':'application/json'},
+      body:JSON.stringify({password}),cache:'no-store'
+    });
+    let result={};try{result=await response.json()}catch{}
+    if(!response.ok)throw Error(result.msg||result.message||result.error_description||result.error||'HTTP '+response.status);
+    recoveryAccessToken=null;
+    document.getElementById('app').innerHTML='<h2>✅ Password aggiornata</h2><div class="card"><p>La nuova password è stata salvata. Ora puoi accedere al gestionale TEST dalla sezione Mac e Linux.</p><button onclick="page=\'cloud\';render()">Vai a Mac e Linux</button></div>';
+  }catch(error){status.textContent='Modifica non riuscita: '+error.message+'. Se il link è scaduto, richiedi una nuova email.'}
+}
+function startRecoveryIfPresent(){
+  const hash=new URLSearchParams(location.hash.replace(/^#/,''));
+  if(hash.get('type')!=='recovery')return false;
+  recoveryAccessToken=hash.get('access_token');
+  // Non conservare il token di recupero nella cronologia del browser.
+  history.replaceState(null,'',location.pathname+location.search);
+  document.getElementById('nav').innerHTML='';
+  if(!recoveryAccessToken){document.getElementById('app').innerHTML='<h2>Link di recupero non valido</h2><p>Richiedi una nuova email da Supabase TEST.</p>';return true}
+  recoveryScreen();return true;
+}
+
+if(!startRecoveryIfPresent())render();
 </script>
 </body></html>
